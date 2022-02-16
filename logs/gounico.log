@@ -1,3 +1,0 @@
-{"level":"info","ts":1645017229.0818207,"caller":"zap/zap.go:32","msg":"Starting registering endpoints in server..."}
-{"level":"info","ts":1645017229.0823412,"caller":"zap/zap.go:32","msg":"Server endpoints registered..."}
-{"level":"info","ts":1645017229.0828638,"caller":"zap/zap.go:32","msg":"Start server"}

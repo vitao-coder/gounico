@@ -60,7 +60,7 @@ func NewServer(logger logging.Logger, endpointsRouter Router) *chi.Mux {
 		w.Write([]byte("pong"))
 	})
 	logger.Info("Server endpoints registered...")
-	return nil
+	return r
 }
 
 func StartServer(lc fx.Lifecycle, logger logging.Logger, server *chi.Mux, config config.Configuration) {
