@@ -10,7 +10,12 @@ type zapLogger struct {
 
 func NewZapLogger() (*zapLogger, error) {
 
-	logger, err := zap.NewProduction()
+	cfg := zap.NewProductionConfig()
+	cfg.OutputPaths = []string{
+		"../gounico/logs/gounico.log",
+	}
+
+	logger, err := cfg.Build()
 
 	if err != nil {
 		return nil, err
