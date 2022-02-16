@@ -1,5 +1,90 @@
-package main
+package internal
 
-func main() {
+import (
+	"context"
+	"gounico/config"
+	"gounico/pkg/logging"
+	"net/http"
+	"os"
+	"path/filepath"
+	"time"
 
+	"github.com/go-chi/chi/v5/middleware"
+
+	"github.com/go-chi/chi/v5"
+	"go.uber.org/fx"
+	"gopkg.in/yaml.v2"
+)
+
+const (
+	timeout = 60
+)
+
+type HTTPEndpoint interface {
+	http.Handler
+	HttpMethod() string
+	HttpPath() string
+}
+
+type Router struct {
+	Endpoints []HTTPEndpoint `group:"endpoints"`
+	fx.In
+}
+
+func NewConfig() config.Configuration {
+	absPath, _ := filepath.Abs("../gounico/config/config.yaml")
+	f, err := os.Open(absPath)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	var cfg config.Configuration
+	decoder := yaml.NewDecoder(f)
+	err = decoder.Decode(&cfg)
+	if err != nil {
+		panic(err)
+	}
+	return cfg
+}
+
+func NewServer(logger logging.Logger, endpointsRouter Router) *chi.Mux {
+	logger.Info("Starting registering endpoints in server...")
+	r := chi.NewRouter()
+
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.Timeout(timeout * time.Second))
+	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("pong"))
+	})
+	logger.Info("Server endpoints registered...")
+	return nil
+}
+
+func StartServer(lc fx.Lifecycle, logger logging.Logger, server *chi.Mux, config config.Configuration) {
+	lc.Append(fx.Hook{
+		OnStart: func(context.Context) error {
+			logger.Info("Start server")
+			go http.ListenAndServe(":"+config.Server.Port, server)
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			logger.Info("Stop server")
+			return nil
+		},
+	})
+}
+
+func ListenAndServe() {
+	ServerModule := fx.Provide(
+		NewConfig,
+		NewServer,
+	)
+	app := fx.New(fx.Options(
+		PackagesModule,
+		ServerModule,
+	), fx.Invoke(StartServer))
+	app.Run()
 }

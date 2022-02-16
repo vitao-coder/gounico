@@ -1,0 +1,5 @@
+# Server configurations
+server:
+  environment: "development"
+  host: "localhost"
+  port: 8000
