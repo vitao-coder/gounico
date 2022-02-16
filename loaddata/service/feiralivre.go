@@ -1,6 +1,7 @@
 package service
 
 import (
+	entityDomain "gounico/feiralivre/domain"
 	"gounico/loaddata/domain"
 
 	"github.com/gocarina/gocsv"
@@ -13,7 +14,7 @@ func NewFeiraLivre() *feiraLivre {
 	return &feiraLivre{}
 }
 
-func (fl *feiraLivre) WrapCSVToDomain(csvByteArray []byte) ([]*domain.FeirasLivresCSV, error) {
+func (fl *feiraLivre) wrapCSVToDomain(csvByteArray []byte) ([]*domain.FeirasLivresCSV, error) {
 
 	feirasLivresCSV := []*domain.FeirasLivresCSV{}
 
@@ -24,4 +25,9 @@ func (fl *feiraLivre) WrapCSVToDomain(csvByteArray []byte) ([]*domain.FeirasLivr
 	}
 
 	return feirasLivresCSV, nil
+}
+
+func (fl *feiraLivre) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivresCSV) ([]*entityDomain.Feira, error) {
+
+	return nil, nil
 }
