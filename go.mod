@@ -10,6 +10,7 @@ require (
 )
 
 require (
+	github.com/gocarina/gocsv v0.0.0-20211203214250-4735fba0c1d9 // indirect
 	go.uber.org/atomic v1.6.0 // indirect
 	go.uber.org/dig v1.12.0 // indirect
 	go.uber.org/multierr v1.5.0 // indirect
