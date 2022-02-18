@@ -16,7 +16,7 @@ func NewFeiraLivreBuilder() *FeiraLivreBuilder {
 
 func (flb *FeiraLivreBuilder) WithFeira(id int, nome string, registro string, setCens string, areaP string) *FeiraLivreBuilder {
 	feira := flb.feiraLivre
-	feira.Id = id
+	feira.ID = uint(id)
 	feira.Nome = nome
 	feira.Registro = registro
 	feira.SetCens = setCens
