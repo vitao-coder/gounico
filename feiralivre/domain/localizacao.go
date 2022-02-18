@@ -6,13 +6,13 @@ import (
 )
 
 type Localizacao struct {
-	UId        string  `gorm:"primary_key;column:UID"`
-	Latitude   float64 `gorm:"not null;column:LAT"`
-	Longitude  float64 `gorm:"not null;column:LONG"`
-	Logradouro string  `gorm:"not null;column:LOGRA"`
-	Numero     string  `gorm:"not null;column:NUMERO"`
-	Bairro     string  `gorm:"not null;column:BAIRRO"`
-	Referencia string  `gorm:"not null;column:REFERENCIA"`
+	UId        string  `gorm:"type:char(32);primary_key; index:,unique"`
+	Latitude   float64 `gorm:"not null"`
+	Longitude  float64 `gorm:"not null"`
+	Logradouro string  `gorm:"not null"`
+	Numero     string  `gorm:"not null"`
+	Bairro     string  `gorm:"not null"`
+	Referencia string  `gorm:"not null"`
 }
 
 func NewLocalizacao(latitude float64, longitude float64, logradouro string, numero string, bairro string, referencia string) *Localizacao {

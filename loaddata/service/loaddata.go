@@ -127,7 +127,7 @@ func (fl *loadData) distinctReusableData(feirasLivresDataToLoad []*entityDomain.
 
 	for _, feira := range feirasLivresDataToLoad {
 		for _, regiao := range feira.SubPrefeitura.Regiao.Regioes {
-			if _, ok := uniqueRegions[feira.SubPrefeitura.Regiao.HashCode()]; !ok {
+			if _, ok := uniqueRegions[regiao.HashCode()]; !ok {
 				uniqueRegions[regiao.Descricao] = regiao
 			}
 		}
@@ -148,14 +148,12 @@ func (fl *loadData) distinctReusableData(feirasLivresDataToLoad []*entityDomain.
 
 func (fl *loadData) saveReusableData(ctx context.Context, regioes []entityDomain.RegiaoGenerica, localizacoes []entityDomain.Localizacao) error {
 
-	err := fl.repository.BulkInsert(ctx, &entityDomain.RegiaoGenerica{}, &regioes)
-	if err != nil {
-		return err
+	if err := fl.repository.DB().WithContext(ctx).Model(&entityDomain.RegiaoGenerica{}).Create(&regioes); err.Error != nil {
+		return err.Error
 	}
 
-	err = fl.repository.BulkInsert(ctx, &entityDomain.Localizacao{}, &localizacoes)
-	if err != nil {
-		return err
+	if err := fl.repository.DB().WithContext(ctx).Model(&entityDomain.Localizacao{}).Create(&localizacoes); err.Error != nil {
+		return err.Error
 	}
 
 	return nil
