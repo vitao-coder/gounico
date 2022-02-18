@@ -50,7 +50,7 @@ func (flb *FeiraLivreBuilder) WithSubPrefeitura(id int, descricao string) *Feira
 	feira.SubPrefeitura = domain.SubPrefeitura{
 		Id:            id,
 		SubPrefeitura: descricao,
-		Regioes:       []domain.Regiao{},
+		Regiao:        domain.Regiao{},
 	}
 	return flb
 }
@@ -60,7 +60,7 @@ func (flb *FeiraLivreBuilder) AddRegiao(descricao string, codigoRegiao int) *Fei
 
 	regiao := domain.NewRegiao(descricao, domain.CodigoRegiao(codigoRegiao))
 
-	feira.SubPrefeitura.Regioes = append(feira.SubPrefeitura.Regioes, *regiao)
+	feira.SubPrefeitura.Regiao = *regiao
 
 	return flb
 }

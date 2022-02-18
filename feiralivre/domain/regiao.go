@@ -16,33 +16,31 @@ const (
 
 type Regiao struct {
 	gorm.Model
-	IdRegiaoGenerica string
-	RegiaoGenerica   RegiaoGenerica `gorm:"foreignkey:IdRegiaoGenerica;references:IdRegiaoGenerica"`
+	IdRegiaoGenerica string           `gorm:"column:REGIAO"`
+	Regioes          []RegiaoGenerica `gorm:"many2many:regiao_regioes;association_foreignkey:UId;foreignkey:IdRegiaoGenerica"`
 	Codigo           int
 }
 
 type RegiaoGenerica struct {
-	gorm.Model
-	IdRegiaoGenerica string
-	Descricao        string
+	UId       string `gorm:"primary_key;column:UID"`
+	Descricao string
 }
 
 func NewRegiao(descricao string, codigoRegiao CodigoRegiao) *Regiao {
 
 	regiao := &Regiao{
-		RegiaoGenerica: RegiaoGenerica{
-			Descricao: descricao,
-		},
+		Regioes: []RegiaoGenerica{
+			{
+				Descricao: descricao,
+			}},
 		Codigo: int(codigoRegiao),
 	}
-	regiao.RegiaoGenerica.IdRegiaoGenerica = regiao.uniqueID()
-	regiao.IdRegiaoGenerica = regiao.RegiaoGenerica.IdRegiaoGenerica
 
 	return regiao
 }
 
 func (r Regiao) HashCode() string {
-	return fmt.Sprintf("%s", r.RegiaoGenerica.Descricao)
+	return fmt.Sprintf("%s", r.Regioes[0].Descricao)
 }
 
 func (r Regiao) uniqueID() string {
