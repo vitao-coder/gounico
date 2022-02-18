@@ -4,6 +4,7 @@ import (
 	entityDomain "gounico/feiralivre/domain"
 	"gounico/feiralivre/domain/builder"
 	"gounico/loaddata/domain"
+	"gounico/pkg/errors"
 	"gounico/repository"
 	"strconv"
 
@@ -20,7 +21,13 @@ func NewLoadData(repository repository.Repository) *loadData {
 	}
 }
 
-func (fl *loadData) ProcessCSVToDatabase(csvByteArray []byte) error {
+func (fl *loadData) ProcessCSVToDatabase(csvByteArray []byte) *errors.ServiceError {
+
+	_, err := fl.wrapCSVToDomain(csvByteArray)
+
+	if err != nil {
+		return errors.InternalServerError("Error wrapCSVToDomain", err)
+	}
 
 	return nil
 }

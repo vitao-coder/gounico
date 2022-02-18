@@ -1,6 +1,7 @@
 package processcsv
 
 import (
+	"bufio"
 	"encoding/json"
 	"gounico/loaddata"
 	"io"
@@ -26,19 +27,24 @@ func (h ProcessCSVHandler) HttpPath() string {
 }
 
 func (h ProcessCSVHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	bodyBytes, err := io.ReadAll(r.Body)
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		return
+	}
+	bodyBytes := bufio.NewReader(file)
+	bytesBody, err := io.ReadAll(bodyBytes)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Bad Request")
+		json.NewEncoder(w).Encode("Error receiving file bytes.")
 		return
 	}
 
-	err = h.loadDataService.ProcessCSVToDatabase(bodyBytes)
-	if err != nil {
+	apiErr := h.loadDataService.ProcessCSVToDatabase(bytesBody)
+	if apiErr != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode("Error on process CSV.")
+		w.WriteHeader(apiErr.HttpStatusCode)
+		json.NewEncoder(w).Encode(apiErr)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)

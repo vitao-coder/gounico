@@ -1,5 +1,7 @@
 package loaddata
 
+import "gounico/pkg/errors"
+
 type LoadData interface {
-	ProcessCSVToDatabase(csvByteArray []byte) error
+	ProcessCSVToDatabase(csvByteArray []byte) *errors.ServiceError
 }
