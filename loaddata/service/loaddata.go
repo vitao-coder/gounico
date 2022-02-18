@@ -42,6 +42,11 @@ func (fl *loadData) ProcessCSVToDatabase(ctx context.Context, csvByteArray []byt
 		return errors.InternalServerError("Error save reusable data.", err)
 	}
 
+	err = fl.saveDataToDatabase(ctx, feiraLivreEntities)
+	if err != nil {
+		return errors.InternalServerError("Error save reusable data.", err)
+	}
+
 	return nil
 }
 
@@ -159,7 +164,11 @@ func (fl *loadData) saveReusableData(ctx context.Context, regioes []entityDomain
 	return nil
 }
 
-func (fl *loadData) saveDataToDatabase(feirasLivresDataToLoad []*entityDomain.Feira) (bool, error) {
+func (fl *loadData) saveDataToDatabase(ctx context.Context, feirasLivresDataToLoad []*entityDomain.Feira) error {
 
-	return true, nil
+	if err := fl.repository.DB().WithContext(ctx).Model(&entityDomain.Feira{}).Create(feirasLivresDataToLoad); err.Error != nil {
+		return err.Error
+	}
+
+	return nil
 }
