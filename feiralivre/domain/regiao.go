@@ -13,7 +13,7 @@ const (
 )
 
 type Regiao struct {
-	IdRegiao         int            `gorm:"primary_key;column:ID"`
+	Id               int            `gorm:"primary_key;column:ID"`
 	IdRegiaoGenerica string         `gorm:"index:idx_regiao,unique;column:IDREGIAOGENERICA"`
 	RegiaoGenerica   RegiaoGenerica `gorm:"foreignkey:UId;references:IdRegiaoGenerica"`
 	Codigo           CodigoRegiao   `gorm:"index:idx_regiao,unique;column:CODREGIAO"`

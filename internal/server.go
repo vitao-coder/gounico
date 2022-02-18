@@ -59,6 +59,11 @@ func NewServer(logger logging.Logger, endpointsRouter Router) *chi.Mux {
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("pong"))
 	})
+
+	for _, endpoint := range endpointsRouter.Endpoints {
+		r.Method(endpoint.HttpMethod(), endpoint.HttpPath(), endpoint)
+	}
+
 	logger.Info(context.Background(), "Server endpoints registered...", nil)
 	return r
 }
@@ -85,8 +90,9 @@ func ListenAndServe() {
 	app := fx.New(fx.Options(
 		PackagesModule,
 		ServerModule,
-		//RepositoryModule,
+		RepositoryModule,
 		ServicesModule,
-	), fx.Invoke(StartServer, StartRepository))
+		HandlersModule,
+	), fx.Invoke(StartServer))
 	app.Run()
 }

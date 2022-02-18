@@ -13,9 +13,6 @@ var ServicesModule = fx.Provide(
 )
 
 func NewLoadDataService(repository repository.Repository) loaddata.LoadData {
-
 	loadDataService := service.NewLoadData(repository)
-
 	return loadDataService
-
 }

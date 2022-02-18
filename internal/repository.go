@@ -10,9 +10,11 @@ import (
 	"go.uber.org/fx"
 )
 
-var RepositoryModule = fx.Provide()
+var RepositoryModule = fx.Provide(
+	NewRepository,
+)
 
-func StartRepository(config config.Configuration, logger logging.Logger) (repository.Repository, error) {
+func NewRepository(config config.Configuration, logger logging.Logger) (repository.Repository, error) {
 	ctx := context.Background()
 
 	logger.Info(ctx, "Open connection with database...", nil)
