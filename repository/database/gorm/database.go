@@ -34,7 +34,7 @@ func connectToDatabase(dbname string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func (db *Database) AutoMigrate(migrateObject interface{}) error {
+func (db *Database) autoMigrate(migrateObject interface{}) error {
 
 	if err := db.gormDB.AutoMigrate(migrateObject); err != nil {
 		return err

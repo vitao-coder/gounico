@@ -3,8 +3,6 @@ package domain
 import (
 	"crypto/md5"
 	"fmt"
-
-	"gorm.io/gorm"
 )
 
 type CodigoRegiao int
@@ -15,9 +13,10 @@ const (
 )
 
 type Regiao struct {
-	gorm.Model
-	RegiaoGenerica *RegiaoGenerica `gorm:"foreignKey:UID"`
-	Codigo         CodigoRegiao    `gorm:"not null;column:CODIGOREGIAO"`
+	IdRegiao         int            `gorm:"primary_key;column:ID"`
+	IdRegiaoGenerica string         `gorm:"index:idx_regiao,unique;column:IDREGIAOGENERICA"`
+	RegiaoGenerica   RegiaoGenerica `gorm:"foreignkey:UId;references:IdRegiaoGenerica"`
+	Codigo           CodigoRegiao   `gorm:"index:idx_regiao,unique;column:CODREGIAO"`
 }
 
 type RegiaoGenerica struct {
@@ -28,7 +27,7 @@ type RegiaoGenerica struct {
 func NewRegiao(descricao string, codigoRegiao CodigoRegiao) *Regiao {
 
 	regiao := &Regiao{
-		RegiaoGenerica: &RegiaoGenerica{
+		RegiaoGenerica: RegiaoGenerica{
 			Descricao: descricao,
 		},
 		Codigo: codigoRegiao,

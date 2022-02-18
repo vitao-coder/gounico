@@ -51,7 +51,7 @@ func Test_feiraLivre_WrapCSVToDomain(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fl := &feiraLivre{}
+			fl := &loadData{}
 			got, err := fl.wrapCSVToDomain(tt.csvByteArray)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("WrapCSVToDomain() error = %v, wantErr %v", err, tt.wantErr)
@@ -65,8 +65,6 @@ func Test_feiraLivre_WrapCSVToDomain(t *testing.T) {
 }
 
 func Test_feiraLivre_wrapDomainToEntities(t *testing.T) {
-	type args struct {
-	}
 	tests := []struct {
 		name            string
 		feirasLivresCSV []*domain.FeirasLivresCSV
@@ -128,7 +126,7 @@ func Test_feiraLivre_wrapDomainToEntities(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fl := &feiraLivre{}
+			fl := &loadData{}
 			got, err := fl.wrapDomainToEntities(tt.feirasLivresCSV)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("wrapDomainToEntities() error = %v, wantErr %v", err, tt.wantErr)
@@ -176,7 +174,7 @@ func Test_feiraLivre_distinctReusableData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fl := &feiraLivre{}
+			fl := &loadData{}
 			got, got1 := fl.distinctReusableData(tt.feirasLivresDataToLoad)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("distinctReusableData() got = %v, want %v", got, tt.want)

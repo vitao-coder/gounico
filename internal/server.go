@@ -65,13 +65,13 @@ func NewServer(logger logging.Logger, endpointsRouter Router) *chi.Mux {
 
 func StartServer(lc fx.Lifecycle, logger logging.Logger, server *chi.Mux, config config.Configuration) {
 	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
-			logger.Info(context.Background(), "Start server", nil)
+		OnStart: func(ctx context.Context) error {
+			logger.Info(ctx, "Start server", nil)
 			go http.ListenAndServe(":"+config.Server.Port, server)
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			logger.Info(context.Background(), "Stop server", nil)
+			logger.Info(ctx, "Stop server", nil)
 			return nil
 		},
 	})
@@ -85,7 +85,8 @@ func ListenAndServe() {
 	app := fx.New(fx.Options(
 		PackagesModule,
 		ServerModule,
-		RepositoryModule,
-	), fx.Invoke(StartServer))
+		//RepositoryModule,
+		ServicesModule,
+	), fx.Invoke(StartServer, StartRepository))
 	app.Run()
 }

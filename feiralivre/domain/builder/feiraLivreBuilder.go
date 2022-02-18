@@ -27,7 +27,7 @@ func (flb *FeiraLivreBuilder) WithFeira(id int, nome string, registro string, se
 
 func (flb *FeiraLivreBuilder) WithLocalizacao(latitude float64, longitude float64, logradouro string, numero string, bairro string, referencia string) *FeiraLivreBuilder {
 	feira := flb.feiraLivre
-	feira.Localizacao = domain.NewLocalizacao(latitude,
+	feira.Localizacao = *domain.NewLocalizacao(latitude,
 		longitude,
 		logradouro,
 		numero,
@@ -38,7 +38,7 @@ func (flb *FeiraLivreBuilder) WithLocalizacao(latitude float64, longitude float6
 
 func (flb *FeiraLivreBuilder) WithDistrito(id int, descricao string) *FeiraLivreBuilder {
 	feira := flb.feiraLivre
-	feira.Distrito = &domain.Distrito{
+	feira.Distrito = domain.Distrito{
 		Id:        id,
 		Descricao: descricao,
 	}
@@ -47,7 +47,7 @@ func (flb *FeiraLivreBuilder) WithDistrito(id int, descricao string) *FeiraLivre
 
 func (flb *FeiraLivreBuilder) WithSubPrefeitura(id int, descricao string) *FeiraLivreBuilder {
 	feira := flb.feiraLivre
-	feira.SubPrefeitura = &domain.SubPrefeitura{
+	feira.SubPrefeitura = domain.SubPrefeitura{
 		Id:            id,
 		SubPrefeitura: descricao,
 		Regioes:       []domain.Regiao{},
@@ -58,9 +58,6 @@ func (flb *FeiraLivreBuilder) WithSubPrefeitura(id int, descricao string) *Feira
 func (flb *FeiraLivreBuilder) AddRegiao(descricao string, codigoRegiao int) *FeiraLivreBuilder {
 	feira := flb.feiraLivre
 
-	if feira.SubPrefeitura == nil {
-		return nil
-	}
 	regiao := domain.NewRegiao(descricao, domain.CodigoRegiao(codigoRegiao))
 	feira.SubPrefeitura.Regioes = append(feira.SubPrefeitura.Regioes, *regiao)
 

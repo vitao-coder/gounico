@@ -4,24 +4,28 @@ import (
 	entityDomain "gounico/feiralivre/domain"
 	"gounico/feiralivre/domain/builder"
 	"gounico/loaddata/domain"
+	"gounico/repository"
 	"strconv"
 
 	"github.com/gocarina/gocsv"
 )
 
-type feiraLivre struct {
+type loadData struct {
+	repository repository.Repository
 }
 
-func NewFeiraLivre() *feiraLivre {
-	return &feiraLivre{}
+func NewLoadData(repository repository.Repository) *loadData {
+	return &loadData{
+		repository: repository,
+	}
 }
 
-func (fl *feiraLivre) ProcessCSVToDabase(csvByteArray []byte) error {
+func (fl *loadData) ProcessCSVToDatabase(csvByteArray []byte) error {
 
 	return nil
 }
 
-func (fl *feiraLivre) wrapCSVToDomain(csvByteArray []byte) ([]*domain.FeirasLivresCSV, error) {
+func (fl *loadData) wrapCSVToDomain(csvByteArray []byte) ([]*domain.FeirasLivresCSV, error) {
 
 	feirasLivresCSV := []*domain.FeirasLivresCSV{}
 
@@ -34,7 +38,7 @@ func (fl *feiraLivre) wrapCSVToDomain(csvByteArray []byte) ([]*domain.FeirasLivr
 	return feirasLivresCSV, nil
 }
 
-func (fl *feiraLivre) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivresCSV) ([]*entityDomain.Feira, error) {
+func (fl *loadData) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivresCSV) ([]*entityDomain.Feira, error) {
 
 	var feiraEntities []*entityDomain.Feira
 
@@ -64,7 +68,7 @@ func (fl *feiraLivre) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivre
 	return feiraEntities, nil
 }
 
-func (fl *feiraLivre) convertStringsToBasicTypes(feiraCSV *domain.FeirasLivresCSV) (feiraID int, distritoID int, longitude float64, latitude float64, subPrefID int, err error) {
+func (fl *loadData) convertStringsToBasicTypes(feiraCSV *domain.FeirasLivresCSV) (feiraID int, distritoID int, longitude float64, latitude float64, subPrefID int, err error) {
 
 	feiraID, err = strconv.Atoi(feiraCSV.Id)
 	if err != nil {
@@ -94,7 +98,7 @@ func (fl *feiraLivre) convertStringsToBasicTypes(feiraCSV *domain.FeirasLivresCS
 	return
 }
 
-func (fl *feiraLivre) distinctReusableData(feirasLivresDataToLoad []*entityDomain.Feira) ([]*entityDomain.RegiaoGenerica, []*entityDomain.Localizacao) {
+func (fl *loadData) distinctReusableData(feirasLivresDataToLoad []*entityDomain.Feira) ([]*entityDomain.RegiaoGenerica, []*entityDomain.Localizacao) {
 	uniqueRegions := make(map[string]*entityDomain.RegiaoGenerica)
 	uniqueLocations := make(map[string]*entityDomain.Localizacao)
 
@@ -104,30 +108,30 @@ func (fl *feiraLivre) distinctReusableData(feirasLivresDataToLoad []*entityDomai
 	for _, feira := range feirasLivresDataToLoad {
 		for _, regiao := range feira.SubPrefeitura.Regioes {
 			if _, ok := uniqueRegions[regiao.RegiaoGenerica.UId]; !ok {
-				uniqueRegions[regiao.RegiaoGenerica.UId] = regiao.RegiaoGenerica
-				regioesDistincted = append(regioesDistincted, regiao.RegiaoGenerica)
+				uniqueRegions[regiao.RegiaoGenerica.UId] = &regiao.RegiaoGenerica
+				regioesDistincted = append(regioesDistincted, &regiao.RegiaoGenerica)
 			}
 		}
 		if _, ok := uniqueLocations[feira.Localizacao.UId]; !ok {
-			uniqueLocations[feira.Localizacao.UId] = feira.Localizacao
-			localizacoesDistincted = append(localizacoesDistincted, feira.Localizacao)
+			uniqueLocations[feira.Localizacao.UId] = &feira.Localizacao
+			localizacoesDistincted = append(localizacoesDistincted, &feira.Localizacao)
 		}
 	}
 
 	return regioesDistincted, localizacoesDistincted
 }
 
-func (fl *feiraLivre) saveReusableData(regioes []entityDomain.RegiaoGenerica, localizacoes []entityDomain.Localizacao) error {
+func (fl *loadData) saveReusableData(regioes []entityDomain.RegiaoGenerica, localizacoes []entityDomain.Localizacao) error {
 
 	return nil
 }
 
-func (fl *feiraLivre) processDataToDatabase(feirasLivresDataToLoad []*entityDomain.Feira) (bool, error) {
+func (fl *loadData) processDataToDatabase(feirasLivresDataToLoad []*entityDomain.Feira) (bool, error) {
 
 	return true, nil
 }
 
-func (fl *feiraLivre) saveDataToDatabase(feirasLivresDataToLoad []*entityDomain.Feira) (bool, error) {
+func (fl *loadData) saveDataToDatabase(feirasLivresDataToLoad []*entityDomain.Feira) (bool, error) {
 
 	return true, nil
 }
