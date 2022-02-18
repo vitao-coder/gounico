@@ -31,7 +31,7 @@ func NewLocalizacao(latitude float64, longitude float64, logradouro string, nume
 }
 
 func (l Localizacao) hashCode() string {
-	return fmt.Sprintf("%s/%s/%s/%s/%s/%s", l.Latitude, l.Longitude, l.Logradouro, l.Numero, l.Bairro, l.Referencia)
+	return fmt.Sprintf("%f/%f/%s/%s/%s", l.Latitude, l.Longitude, l.Logradouro, l.Numero, l.Bairro)
 }
 
 func (l Localizacao) uniqueID() string {
