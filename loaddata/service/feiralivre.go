@@ -94,9 +94,27 @@ func (fl *feiraLivre) convertStringsToBasicTypes(feiraCSV *domain.FeirasLivresCS
 	return
 }
 
-func (fl *feiraLivre) distinctReusableData(feirasLivresDataToLoad []*entityDomain.Feira) ([]entityDomain.RegiaoGenerica, []entityDomain.Localizacao) {
+func (fl *feiraLivre) distinctReusableData(feirasLivresDataToLoad []*entityDomain.Feira) ([]*entityDomain.RegiaoGenerica, []*entityDomain.Localizacao) {
+	uniqueRegions := make(map[string]*entityDomain.RegiaoGenerica)
+	uniqueLocations := make(map[string]*entityDomain.Localizacao)
 
-	return nil, nil
+	var regioesDistincted []*entityDomain.RegiaoGenerica
+	var localizacoesDistincted []*entityDomain.Localizacao
+
+	for _, feira := range feirasLivresDataToLoad {
+		for _, regiao := range feira.SubPrefeitura.Regioes {
+			if _, ok := uniqueRegions[regiao.RegiaoGenerica.UId]; !ok {
+				uniqueRegions[regiao.RegiaoGenerica.UId] = regiao.RegiaoGenerica
+				regioesDistincted = append(regioesDistincted, regiao.RegiaoGenerica)
+			}
+		}
+		if _, ok := uniqueLocations[feira.Localizacao.UId]; !ok {
+			uniqueLocations[feira.Localizacao.UId] = feira.Localizacao
+			localizacoesDistincted = append(localizacoesDistincted, feira.Localizacao)
+		}
+	}
+
+	return regioesDistincted, localizacoesDistincted
 }
 
 func (fl *feiraLivre) saveReusableData(regioes []entityDomain.RegiaoGenerica, localizacoes []entityDomain.Localizacao) error {

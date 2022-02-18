@@ -14,7 +14,7 @@ const (
 
 type Regiao struct {
 	Id             int
-	RegiaoGenerica RegiaoGenerica
+	RegiaoGenerica *RegiaoGenerica
 	Codigo         CodigoRegiao
 }
 
@@ -26,7 +26,7 @@ type RegiaoGenerica struct {
 func NewRegiao(descricao string, codigoRegiao CodigoRegiao) *Regiao {
 
 	regiao := &Regiao{
-		RegiaoGenerica: RegiaoGenerica{
+		RegiaoGenerica: &RegiaoGenerica{
 			Descricao: descricao,
 		},
 		Codigo: codigoRegiao,
