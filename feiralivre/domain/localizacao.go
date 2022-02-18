@@ -1,9 +1,8 @@
 package domain
 
 import (
-	"crypto/sha1"
+	"crypto/md5"
 	"fmt"
-	"io"
 )
 
 type Localizacao struct {
@@ -35,10 +34,6 @@ func (l Localizacao) hashCode() string {
 }
 
 func (l Localizacao) uniqueID() string {
-	uid := sha1.New()
-	_, err := io.WriteString(uid, l.hashCode())
-	if err != nil {
-		return ""
-	}
-	return fmt.Sprintf("%s", uid.Sum(nil))
+	data := []byte(l.hashCode())
+	return fmt.Sprintf("%x", md5.Sum(data))
 }

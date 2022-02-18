@@ -16,6 +16,11 @@ func NewFeiraLivre() *feiraLivre {
 	return &feiraLivre{}
 }
 
+func (fl *feiraLivre) ProcessCSVToDabase(csvByteArray []byte) error {
+
+	return nil
+}
+
 func (fl *feiraLivre) wrapCSVToDomain(csvByteArray []byte) ([]*domain.FeirasLivresCSV, error) {
 
 	feirasLivresCSV := []*domain.FeirasLivresCSV{}
@@ -89,17 +94,19 @@ func (fl *feiraLivre) convertStringsToBasicTypes(feiraCSV *domain.FeirasLivresCS
 	return
 }
 
+func (fl *feiraLivre) distinctReusableData(feirasLivresDataToLoad []*entityDomain.Feira) ([]entityDomain.RegiaoGenerica, []entityDomain.Localizacao) {
+
+	return nil, nil
+}
+
+func (fl *feiraLivre) saveReusableData(regioes []entityDomain.RegiaoGenerica, localizacoes []entityDomain.Localizacao) error {
+
+	return nil
+}
+
 func (fl *feiraLivre) processDataToDatabase(feirasLivresDataToLoad []*entityDomain.Feira) (bool, error) {
 
 	return true, nil
-}
-
-func (fl *feiraLivre) distinctReusableData(feirasLivresDataToLoad []*entityDomain.Feira) ([]entityDomain.RegiaoGenerica, []entityDomain.Localizacao) {
-	return nil, nil
-}
-
-func (fl *feiraLivre) saveReusableData(feirasLivresDataToLoad []*entityDomain.Feira) ([]entityDomain.RegiaoGenerica, []entityDomain.Localizacao) {
-	return nil, nil
 }
 
 func (fl *feiraLivre) saveDataToDatabase(feirasLivresDataToLoad []*entityDomain.Feira) (bool, error) {

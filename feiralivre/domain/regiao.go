@@ -1,9 +1,8 @@
 package domain
 
 import (
-	"crypto/sha1"
+	"crypto/md5"
 	"fmt"
-	"io"
 )
 
 type CodigoRegiao int
@@ -42,10 +41,6 @@ func (r Regiao) hashCode() string {
 }
 
 func (r Regiao) uniqueID() string {
-	uid := sha1.New()
-	_, err := io.WriteString(uid, r.hashCode())
-	if err != nil {
-		return ""
-	}
-	return fmt.Sprintf("%s", uid.Sum(nil))
+	data := []byte(r.hashCode())
+	return fmt.Sprintf("%x", md5.Sum(data))
 }
