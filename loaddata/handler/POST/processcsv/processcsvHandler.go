@@ -40,7 +40,7 @@ func (h ProcessCSVHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	apiErr := h.loadDataService.ProcessCSVToDatabase(bytesBody)
+	apiErr := h.loadDataService.ProcessCSVToDatabase(r.Context(), bytesBody)
 	if apiErr != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(apiErr.HttpStatusCode)

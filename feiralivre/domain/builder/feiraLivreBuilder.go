@@ -59,6 +59,7 @@ func (flb *FeiraLivreBuilder) AddRegiao(descricao string, codigoRegiao int) *Fei
 	feira := flb.feiraLivre
 
 	regiao := domain.NewRegiao(descricao, domain.CodigoRegiao(codigoRegiao))
+
 	feira.SubPrefeitura.Regioes = append(feira.SubPrefeitura.Regioes, *regiao)
 
 	return flb

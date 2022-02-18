@@ -3,6 +3,8 @@ package domain
 import (
 	"crypto/md5"
 	"fmt"
+
+	"gorm.io/gorm"
 )
 
 type CodigoRegiao int
@@ -13,15 +15,16 @@ const (
 )
 
 type Regiao struct {
-	Id               int            `gorm:"primary_key;column:ID"`
-	IdRegiaoGenerica string         `gorm:"index:idx_regiao,unique;column:IDREGIAOGENERICA"`
-	RegiaoGenerica   RegiaoGenerica `gorm:"foreignkey:UId;references:IdRegiaoGenerica"`
-	Codigo           CodigoRegiao   `gorm:"index:idx_regiao,unique;column:CODREGIAO"`
+	gorm.Model
+	IdRegiaoGenerica string
+	RegiaoGenerica   RegiaoGenerica `gorm:"foreignkey:IdRegiaoGenerica;references:IdRegiaoGenerica"`
+	Codigo           int
 }
 
 type RegiaoGenerica struct {
-	UId       string `gorm:"primary_key;column:UID"`
-	Descricao string `gorm:"not null;column:DESCRICAO"`
+	gorm.Model
+	IdRegiaoGenerica string
+	Descricao        string
 }
 
 func NewRegiao(descricao string, codigoRegiao CodigoRegiao) *Regiao {
@@ -30,18 +33,19 @@ func NewRegiao(descricao string, codigoRegiao CodigoRegiao) *Regiao {
 		RegiaoGenerica: RegiaoGenerica{
 			Descricao: descricao,
 		},
-		Codigo: codigoRegiao,
+		Codigo: int(codigoRegiao),
 	}
-	regiao.RegiaoGenerica.UId = regiao.uniqueID()
+	regiao.RegiaoGenerica.IdRegiaoGenerica = regiao.uniqueID()
+	regiao.IdRegiaoGenerica = regiao.RegiaoGenerica.IdRegiaoGenerica
 
 	return regiao
 }
 
-func (r Regiao) hashCode() string {
+func (r Regiao) HashCode() string {
 	return fmt.Sprintf("%s", r.RegiaoGenerica.Descricao)
 }
 
 func (r Regiao) uniqueID() string {
-	data := []byte(r.hashCode())
+	data := []byte(r.HashCode())
 	return fmt.Sprintf("%x", md5.Sum(data))
 }

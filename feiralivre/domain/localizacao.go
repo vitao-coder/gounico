@@ -29,11 +29,11 @@ func NewLocalizacao(latitude float64, longitude float64, logradouro string, nume
 	return localizacao
 }
 
-func (l Localizacao) hashCode() string {
+func (l Localizacao) HashCode() string {
 	return fmt.Sprintf("%f/%f/%s/%s/%s", l.Latitude, l.Longitude, l.Logradouro, l.Numero, l.Bairro)
 }
 
 func (l Localizacao) uniqueID() string {
-	data := []byte(l.hashCode())
+	data := []byte(l.HashCode())
 	return fmt.Sprintf("%x", md5.Sum(data))
 }

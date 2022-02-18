@@ -5,3 +5,9 @@ server:
   port: 8000
   logpath: "../gounico/logs/gounico.log"
   dbname: "gounico.db"
+database:
+    DB_USERNAME : "root"
+    DB_PASSWORD : "root"
+    DB_NAME : "gounico"
+    DB_HOST : "127.0.0.1"
+    DB_PORT : "3306"

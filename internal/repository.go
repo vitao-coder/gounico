@@ -18,7 +18,7 @@ func NewRepository(config config.Configuration, logger logging.Logger) (reposito
 	ctx := context.Background()
 
 	logger.Info(ctx, "Open connection with database...", nil)
-	repo, err := gorm.NewDatabase(config.Server.DBName)
+	repo, err := gorm.NewDatabase(config.Database)
 	if err != nil {
 		logger.Error(ctx, "Error open connection with database.", nil, err)
 		return nil, err
