@@ -3,3 +3,5 @@ server:
   environment: "development"
   host: "localhost"
   port: 8000
+  logpath: "../gounico/logs/gounico.log"
+  dbname: "gounico.db"

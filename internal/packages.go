@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"gounico/config"
 	"gounico/pkg/logging"
 	"gounico/pkg/logging/zap"
 
@@ -11,7 +12,7 @@ var PackagesModule = fx.Provide(
 	NewLogger,
 )
 
-func NewLogger() (logging.Logger, error) {
-	logger, err := zap.NewZapLogger()
+func NewLogger(config config.Configuration) (logging.Logger, error) {
+	logger, err := zap.NewZapLogger(config.Server.LogPath)
 	return logger, err
 }

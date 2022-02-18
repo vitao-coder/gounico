@@ -49,7 +49,7 @@ func NewConfig() config.Configuration {
 }
 
 func NewServer(logger logging.Logger, endpointsRouter Router) *chi.Mux {
-	logger.Info("Starting registering endpoints in server...")
+	logger.Info(context.Background(), "Starting registering endpoints in server...", nil)
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -59,19 +59,19 @@ func NewServer(logger logging.Logger, endpointsRouter Router) *chi.Mux {
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("pong"))
 	})
-	logger.Info("Server endpoints registered...")
+	logger.Info(context.Background(), "Server endpoints registered...", nil)
 	return r
 }
 
 func StartServer(lc fx.Lifecycle, logger logging.Logger, server *chi.Mux, config config.Configuration) {
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			logger.Info("Start server")
+			logger.Info(context.Background(), "Start server", nil)
 			go http.ListenAndServe(":"+config.Server.Port, server)
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			logger.Info("Stop server")
+			logger.Info(context.Background(), "Stop server", nil)
 			return nil
 		},
 	})
@@ -85,6 +85,7 @@ func ListenAndServe() {
 	app := fx.New(fx.Options(
 		PackagesModule,
 		ServerModule,
+		RepositoryModule,
 	), fx.Invoke(StartServer))
 	app.Run()
 }

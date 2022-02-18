@@ -3,24 +3,26 @@ package domain
 import (
 	"crypto/md5"
 	"fmt"
+
+	"gorm.io/gorm"
 )
 
 type CodigoRegiao int
 
 const (
 	Regiao5 CodigoRegiao = 5
-	Regiao8              = 8
+	Regiao8 CodigoRegiao = 8
 )
 
 type Regiao struct {
-	Id             int
-	RegiaoGenerica *RegiaoGenerica
-	Codigo         CodigoRegiao
+	gorm.Model
+	RegiaoGenerica *RegiaoGenerica `gorm:"foreignKey:UID"`
+	Codigo         CodigoRegiao    `gorm:"not null;column:CODIGOREGIAO"`
 }
 
 type RegiaoGenerica struct {
-	UId       string
-	Descricao string
+	UId       string `gorm:"primary_key;column:UID"`
+	Descricao string `gorm:"not null;column:DESCRICAO"`
 }
 
 func NewRegiao(descricao string, codigoRegiao CodigoRegiao) *Regiao {
