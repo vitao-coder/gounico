@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"gounico/config"
 	"gounico/pkg/logging"
 	"net/http"
@@ -62,6 +63,7 @@ func NewServer(logger logging.Logger, endpointsRouter Router) *chi.Mux {
 
 	for _, endpoint := range endpointsRouter.Endpoints {
 		r.Method(endpoint.HttpMethod(), endpoint.HttpPath(), endpoint)
+		logger.Info(context.Background(), fmt.Sprintf("Method: %s - Pattern: %s - Registered.", endpoint.HttpMethod(), endpoint.HttpPath()), nil)
 	}
 
 	logger.Info(context.Background(), "Server endpoints registered...", nil)
