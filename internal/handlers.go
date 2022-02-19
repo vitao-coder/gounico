@@ -2,7 +2,9 @@ package internal
 
 import (
 	"gounico/feiralivre"
+	"gounico/feiralivre/handler/DELETE/excluirfeira"
 	"gounico/feiralivre/handler/GET/buscarfeira"
+	"gounico/feiralivre/handler/POST/novafeira"
 	"gounico/loaddata"
 	"gounico/loaddata/handler/POST/processcsv"
 
@@ -12,6 +14,8 @@ import (
 var HandlersModule = fx.Provide(
 	NewProcessCSVHandler,
 	NewBuscarFeiraHandler,
+	NewExcluirFeiraHandler,
+	NewNovaFeiraHandler,
 )
 
 type HandlerOutput struct {
@@ -28,6 +32,20 @@ func NewProcessCSVHandler(service loaddata.LoadData) HandlerOutput {
 
 func NewBuscarFeiraHandler(service feiralivre.FeiraLivre) HandlerOutput {
 	handlerEndpoint := buscarfeira.NewBuscarFeiraHandler(service)
+	return HandlerOutput{
+		Endpoint: handlerEndpoint,
+	}
+}
+
+func NewExcluirFeiraHandler(service feiralivre.FeiraLivre) HandlerOutput {
+	handlerEndpoint := excluirfeira.NewExcluirFeiraHandler(service)
+	return HandlerOutput{
+		Endpoint: handlerEndpoint,
+	}
+}
+
+func NewNovaFeiraHandler(service feiralivre.FeiraLivre) HandlerOutput {
+	handlerEndpoint := novafeira.NewNovaFeiraHandler(service)
 	return HandlerOutput{
 		Endpoint: handlerEndpoint,
 	}

@@ -184,6 +184,7 @@ func buildSampleFeirasLivresCSV() *domain.FeirasLivresCSV {
 		Bairro:     "VL FORMOSA",
 		Referencia: "TV RUA PRETORIA",
 	}
+
 	return feiraCSV
 }
 

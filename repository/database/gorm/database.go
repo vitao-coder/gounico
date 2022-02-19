@@ -1,7 +1,6 @@
 package gorm
 
 import (
-	"context"
 	"gounico/config"
 
 	"gorm.io/driver/mysql"
@@ -39,34 +38,6 @@ func (db *Database) autoMigrate(migrateObject interface{}) error {
 
 	if err := db.GormDB.AutoMigrate(migrateObject); err != nil {
 		return err
-	}
-	return nil
-}
-
-func (db *Database) Insert(ctx context.Context, model interface{}, createObject interface{}) error {
-	if err := db.GormDB.WithContext(ctx).Model(model).Create(&createObject); err != nil {
-		return err.Error
-	}
-	return nil
-}
-
-func (db *Database) Save(saveObject *interface{}) error {
-	if err := db.GormDB.Save(&saveObject); err != nil {
-		return err.Error
-	}
-	return nil
-}
-
-func (db *Database) BulkInsert(ctx context.Context, model interface{}, createObjects ...interface{}) error {
-	for _, object := range createObjects {
-		db.Insert(ctx, model, object)
-	}
-	return nil
-}
-
-func (db *Database) Find(objectToFill *interface{}, fieldName string, fieldValue interface{}) error {
-	if err := db.GormDB.Find(objectToFill, fieldName, fieldValue); err != nil {
-		return err.Error
 	}
 	return nil
 }

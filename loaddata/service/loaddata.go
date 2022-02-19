@@ -7,7 +7,6 @@ import (
 	"gounico/loaddata/domain"
 	"gounico/pkg/errors"
 	"gounico/repository"
-	"strconv"
 	"strings"
 
 	"github.com/gocarina/gocsv"
@@ -70,7 +69,7 @@ func (fl *loadData) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivresC
 
 	for _, feiraCSV := range feirasLivresCSV {
 
-		feiraID, distritoID, longitude, latitude, subPrefID, err := fl.convertStringsToBasicTypes(feiraCSV)
+		feiraID, distritoID, longitude, latitude, subPrefID, err := feiraCSV.StringsToPrimitiveTypes()
 		if err != nil {
 			return nil, nil, err
 		}
@@ -93,36 +92,6 @@ func (fl *loadData) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivresC
 	}
 
 	return feiraEntities, regioes, nil
-}
-
-func (fl *loadData) convertStringsToBasicTypes(feiraCSV *domain.FeirasLivresCSV) (feiraID int, distritoID int, longitude float64, latitude float64, subPrefID int, err error) {
-
-	feiraID, err = strconv.Atoi(feiraCSV.Id)
-	if err != nil {
-		return
-	}
-
-	distritoID, err = strconv.Atoi(feiraCSV.CodDist)
-	if err != nil {
-		return
-	}
-
-	longitude, err = strconv.ParseFloat(feiraCSV.Longitude, 64)
-	if err != nil {
-		return
-	}
-
-	latitude, err = strconv.ParseFloat(feiraCSV.Latitude, 64)
-	if err != nil {
-		return
-	}
-
-	subPrefID, err = strconv.Atoi(feiraCSV.CodSubPref)
-	if err != nil {
-		return
-	}
-
-	return
 }
 
 func (fl *loadData) distinctReusableData(regioesGenericas []*entityDomain.RegiaoGenerica) []entityDomain.RegiaoGenerica {

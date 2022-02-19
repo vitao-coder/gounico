@@ -34,7 +34,6 @@ func (flb *FeiraLivreBuilder) WithLocalizacao(latitude float64, longitude float6
 		numero,
 		bairro,
 		referencia)
-
 	return flb
 }
 

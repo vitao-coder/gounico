@@ -38,6 +38,7 @@ func (h BuscarFeiraHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "bairro":
 		feirasRetornadas, apiError = h.feiraLivreService.BuscarFeiraPorBairro(r.Context(), param)
 	case "distrito":
+		feirasRetornadas, apiError = h.feiraLivreService.BuscarFeiraPorDistrito(r.Context(), param)
 	default:
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)

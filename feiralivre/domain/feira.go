@@ -8,7 +8,7 @@ type Feira struct {
 	Registro       string        `gorm:"not null"`
 	SetCens        string        `gorm:"not null"`
 	AreaP          string        `gorm:"not null"`
-	UIdLocalizacao string        `gorm:"type:char(32); index:,unique"`
+	UIdLocalizacao string        `gorm:"type:char(32);"`
 	Localizacao    Localizacao   `gorm:"foreignKey:UIdLocalizacao;References:UId;"`
 	IdDistrito     int           `gorm:"not null"`
 	Distrito       Distrito      `gorm:"foreignKey:IdDistrito;references:Id"`

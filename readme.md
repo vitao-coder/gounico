@@ -7,13 +7,12 @@
 
 >   sudo docker pull mysql/mysql-server:latest
 
->     sudo docker run -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=root -d mysql/mysql-server:latest
+>    sudo docker run -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=root -d mysql/mysql-server:latest
 
 **2 - Incluir usuario root para acesso local**
 >     sudo docker exec -it mysql bash
->
->     mysql -uroot -p
 
+>     mysql -uroot -p
 
     CREATE USER 'root'@'%' IDENTIFIED BY 'root';  
     FLUSH PRIVILEGES;  
@@ -45,7 +44,7 @@
 
     GRANT ALL PRIVILEGES ON gounico.* TO 'root'@'%' WITH GRANT OPTION;
 
-**6 - Executar na pasta do projeto**
+**6 - Executar na pasta do projeto (caso tenha o Go 1.17 instalado)**
 
     go run gounico
 

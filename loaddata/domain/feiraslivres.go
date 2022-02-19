@@ -1,5 +1,7 @@
 package domain
 
+import "strconv"
+
 type FeirasLivresCSV struct {
 	Id         string `csv:"ID"`
 	Longitude  string `csv:"LONG"`
@@ -18,4 +20,34 @@ type FeirasLivresCSV struct {
 	Numero     string `csv:"NUMERO"`
 	Bairro     string `csv:"BAIRRO"`
 	Referencia string `csv:"REFERENCIA"`
+}
+
+func (flcsv *FeirasLivresCSV) StringsToPrimitiveTypes() (feiraID int, distritoID int, longitude float64, latitude float64, subPrefID int, err error) {
+
+	feiraID, err = strconv.Atoi(flcsv.Id)
+	if err != nil {
+		return
+	}
+
+	distritoID, err = strconv.Atoi(flcsv.CodDist)
+	if err != nil {
+		return
+	}
+
+	longitude, err = strconv.ParseFloat(flcsv.Longitude, 64)
+	if err != nil {
+		return
+	}
+
+	latitude, err = strconv.ParseFloat(flcsv.Latitude, 64)
+	if err != nil {
+		return
+	}
+
+	subPrefID, err = strconv.Atoi(flcsv.CodSubPref)
+	if err != nil {
+		return
+	}
+
+	return
 }
