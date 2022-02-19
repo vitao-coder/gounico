@@ -1,10 +1,9 @@
 # Server configurations
 server:
   environment: "development"
-  host: "172.17.0.2"
+  host: "localhost"
   port: 8000
   logpath: "../gounico/logs/gounico.log"
-  dbname: "gounico.db"
 database:
     DB_USERNAME : "root"
     DB_PASSWORD : "root"
