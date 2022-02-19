@@ -131,13 +131,15 @@ func (fl *loadData) distinctReusableData(feirasLivresDataToLoad []*entityDomain.
 	var localizacoesDistincted []entityDomain.Localizacao
 
 	for _, feira := range feirasLivresDataToLoad {
-		for _, regiao := range feira.SubPrefeitura.Regiao.Regioes {
-			if _, ok := uniqueRegions[regiao.HashCode()]; !ok {
-				uniqueRegions[regiao.Descricao] = regiao
+		for _, regiao := range feira.SubPrefeitura.Regioes {
+			for _, regiaoGen := range regiao.Regioes {
+				if _, ok := uniqueRegions[regiaoGen.HashCode()]; !ok {
+					uniqueRegions[regiaoGen.HashCode()] = regiaoGen
+				}
 			}
 		}
 		if _, ok := uniqueLocations[feira.Localizacao.HashCode()]; !ok {
-			uniqueLocations[feira.Localizacao.UId] = feira.Localizacao
+			uniqueLocations[feira.Localizacao.HashCode()] = feira.Localizacao
 		}
 	}
 
