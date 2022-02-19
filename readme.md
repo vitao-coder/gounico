@@ -49,5 +49,5 @@
 
     go run gounico
 
-**6 - Usar a seguinte collection do postman para testar as requisições**  
+**7 - Usar a seguinte collection do postman para testar as requisições**  
 https://www.getpostman.com/collections/957a447bf220f3a9fab1
