@@ -5,7 +5,8 @@ import (
 )
 
 type FeiraLivreBuilder struct {
-	feiraLivre *domain.Feira
+	feiraLivre       *domain.Feira
+	regioesGenericas []*domain.RegiaoGenerica
 }
 
 func NewFeiraLivreBuilder() *FeiraLivreBuilder {
@@ -27,12 +28,13 @@ func (flb *FeiraLivreBuilder) WithFeira(id int, nome string, registro string, se
 
 func (flb *FeiraLivreBuilder) WithLocalizacao(latitude float64, longitude float64, logradouro string, numero string, bairro string, referencia string) *FeiraLivreBuilder {
 	feira := flb.feiraLivre
-	feira.Localizacao = *domain.NewLocalizacao(latitude,
+	feira.Localizacao = domain.NewLocalizacao(latitude,
 		longitude,
 		logradouro,
 		numero,
 		bairro,
 		referencia)
+
 	return flb
 }
 
@@ -42,6 +44,8 @@ func (flb *FeiraLivreBuilder) WithDistrito(id int, descricao string) *FeiraLivre
 		Id:        id,
 		Descricao: descricao,
 	}
+
+	feira.IdDistrito = feira.Distrito.Id
 	return flb
 }
 
@@ -52,17 +56,29 @@ func (flb *FeiraLivreBuilder) WithSubPrefeitura(id int, descricao string) *Feira
 		SubPrefeitura: descricao,
 		Regioes:       []domain.Regiao{},
 	}
+	feira.IdSubPref = feira.SubPrefeitura.Id
 	return flb
 }
 
-func (flb *FeiraLivreBuilder) AddRegiao(descricao string, codigoRegiao int) *FeiraLivreBuilder {
+func (flb *FeiraLivreBuilder) WithRegioes(descricaoRegiao5 string, descricaoRegiao8 string) *FeiraLivreBuilder {
 	feira := flb.feiraLivre
 
-	regiao := domain.NewRegiao(descricao, domain.CodigoRegiao(codigoRegiao))
+	regiao5 := domain.NewRegiao(domain.CodigoRegiao(5))
+	regiaoGenerica5 := domain.NewRegiaoGenerica(descricaoRegiao5)
+	regiao5.IdRegiaoGenerica = regiaoGenerica5.IdRegiao
 
-	feira.SubPrefeitura.Regioes = append(feira.SubPrefeitura.Regioes, *regiao)
+	regiao8 := domain.NewRegiao(domain.CodigoRegiao(8))
+	regiaoGenerica8 := domain.NewRegiaoGenerica(descricaoRegiao8)
+	regiao8.IdRegiaoGenerica = regiaoGenerica8.IdRegiao
+
+	feira.SubPrefeitura.Regioes = append(feira.SubPrefeitura.Regioes, *regiao5, *regiao8)
+	flb.regioesGenericas = append(flb.regioesGenericas, regiaoGenerica5, regiaoGenerica8)
 
 	return flb
+}
+
+func (flb *FeiraLivreBuilder) BuildRegiaoGenerica() []*domain.RegiaoGenerica {
+	return flb.regioesGenericas
 }
 
 func (flb *FeiraLivreBuilder) Build() *domain.Feira {

@@ -31,13 +31,13 @@ func (fl *loadData) ProcessCSVToDatabase(ctx context.Context, csvByteArray []byt
 		return errors.BadRequestError("Error wrap CSV. Please verify file columns and data types.")
 	}
 
-	feiraLivreEntities, err := fl.wrapDomainToEntities(csvDomain)
+	feiraLivreEntities, regioes, err := fl.wrapDomainToEntities(csvDomain)
 	if err != nil {
 		return errors.InternalServerError("Error translate CSV into domains.", err)
 	}
 
-	regioes, localizacoes := fl.distinctReusableData(feiraLivreEntities)
-	err = fl.saveReusableData(ctx, regioes, localizacoes)
+	regioesDistincted := fl.distinctReusableData(regioes)
+	err = fl.saveReusableData(ctx, regioesDistincted)
 	if err != nil {
 		return errors.InternalServerError("Error save reusable data.", err)
 	}
@@ -63,15 +63,16 @@ func (fl *loadData) wrapCSVToDomain(csvByteArray []byte) ([]*domain.FeirasLivres
 	return feirasLivresCSV, nil
 }
 
-func (fl *loadData) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivresCSV) ([]*entityDomain.Feira, error) {
+func (fl *loadData) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivresCSV) ([]*entityDomain.Feira, []*entityDomain.RegiaoGenerica, error) {
 
 	var feiraEntities []*entityDomain.Feira
+	var regioes []*entityDomain.RegiaoGenerica
 
 	for _, feiraCSV := range feirasLivresCSV {
 
 		feiraID, distritoID, longitude, latitude, subPrefID, err := fl.convertStringsToBasicTypes(feiraCSV)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		builderFeira := builder.NewFeiraLivreBuilder()
@@ -81,16 +82,17 @@ func (fl *loadData) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivresC
 			WithLocalizacao(latitude, longitude, feiraCSV.Logradouro, feiraCSV.Numero, feiraCSV.Bairro, feiraCSV.Referencia).
 			WithSubPrefeitura(subPrefID, feiraCSV.SubPrefe)
 
-		builderFeira.AddRegiao(strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao5, " "), " "), 5)
-		builderFeira.AddRegiao(strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao8, " "), " "), 8)
+		builderFeira.WithRegioes(strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao5, " "), " "), strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao8, " "), " "))
 
 		feiraEntity := builderFeira.Build()
+		regioesGenericas := builderFeira.BuildRegiaoGenerica()
+		regioes = append(regioes, regioesGenericas...)
 
 		feiraEntities = append(feiraEntities, feiraEntity)
 
 	}
 
-	return feiraEntities, nil
+	return feiraEntities, regioes, nil
 }
 
 func (fl *loadData) convertStringsToBasicTypes(feiraCSV *domain.FeirasLivresCSV) (feiraID int, distritoID int, longitude float64, latitude float64, subPrefID int, err error) {
@@ -123,43 +125,24 @@ func (fl *loadData) convertStringsToBasicTypes(feiraCSV *domain.FeirasLivresCSV)
 	return
 }
 
-func (fl *loadData) distinctReusableData(feirasLivresDataToLoad []*entityDomain.Feira) ([]entityDomain.RegiaoGenerica, []entityDomain.Localizacao) {
+func (fl *loadData) distinctReusableData(regioesGenericas []*entityDomain.RegiaoGenerica) []entityDomain.RegiaoGenerica {
 	uniqueRegions := make(map[string]entityDomain.RegiaoGenerica)
-	uniqueLocations := make(map[string]entityDomain.Localizacao)
-
 	var regioesDistincted []entityDomain.RegiaoGenerica
-	var localizacoesDistincted []entityDomain.Localizacao
 
-	for _, feira := range feirasLivresDataToLoad {
-		for _, regiao := range feira.SubPrefeitura.Regioes {
-			for _, regiaoGen := range regiao.Regioes {
-				if _, ok := uniqueRegions[regiaoGen.HashCode()]; !ok {
-					uniqueRegions[regiaoGen.HashCode()] = regiaoGen
-				}
-			}
-		}
-		if _, ok := uniqueLocations[feira.Localizacao.HashCode()]; !ok {
-			uniqueLocations[feira.Localizacao.HashCode()] = feira.Localizacao
+	for _, regiao := range regioesGenericas {
+		if _, ok := uniqueRegions[regiao.HashCode()]; !ok {
+			uniqueRegions[regiao.HashCode()] = *regiao
 		}
 	}
-
 	for _, regionUnique := range uniqueRegions {
 		regioesDistincted = append(regioesDistincted, regionUnique)
 	}
-
-	for _, localizacaoUnique := range uniqueLocations {
-		localizacoesDistincted = append(localizacoesDistincted, localizacaoUnique)
-	}
-	return regioesDistincted, localizacoesDistincted
+	return regioesDistincted
 }
 
-func (fl *loadData) saveReusableData(ctx context.Context, regioes []entityDomain.RegiaoGenerica, localizacoes []entityDomain.Localizacao) error {
+func (fl *loadData) saveReusableData(ctx context.Context, regioes []entityDomain.RegiaoGenerica) error {
 
 	if err := fl.repository.DB().WithContext(ctx).Model(&entityDomain.RegiaoGenerica{}).Create(&regioes); err.Error != nil {
-		return err.Error
-	}
-
-	if err := fl.repository.DB().WithContext(ctx).Model(&entityDomain.Localizacao{}).Create(&localizacoes); err.Error != nil {
 		return err.Error
 	}
 

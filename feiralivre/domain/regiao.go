@@ -11,27 +11,30 @@ type CodigoRegiao int
 
 type Regiao struct {
 	gorm.Model
-	IdRegiaoGenerica string           `gorm:"type:char(32);index:,unique"`
-	Regioes          []RegiaoGenerica `gorm:"many2many:regiao_regioes;foreignKey:IdRegiaoGenerica;References:IdRegiao;"`
+	IdRegiaoGenerica string `gorm:"type:char(32);index:,unique"`
 	Codigo           int
 }
 
 type RegiaoGenerica struct {
-	IdRegiao  string `gorm:"type:char(32);primary_key; index:,unique"`
-	Descricao string `gorm:"type:varchar(255);not null"`
+	IdRegiao  string   `gorm:"type:char(32);primary_key; index:,unique"`
+	Descricao string   `gorm:"type:varchar(255);not null"`
+	Regioes   []Regiao `gorm:"many2many:regiao_regioes;foreignKey:IdRegiao;References:IdRegiaoGenerica;"`
 }
 
-func NewRegiao(descricao string, codigoRegiao CodigoRegiao) *Regiao {
-
-	regiao := &Regiao{
-		Regioes: []RegiaoGenerica{
-			{
-				Descricao: descricao,
-			}},
-		Codigo: int(codigoRegiao),
+func NewRegiaoGenerica(descricao string) *RegiaoGenerica {
+	regiao := &RegiaoGenerica{
+		Descricao: descricao,
 	}
 
-	regiao.Regioes[0].IdRegiao = regiao.Regioes[0].uniqueID()
+	regiao.IdRegiao = regiao.uniqueID()
+	return regiao
+}
+
+func NewRegiao(codigoRegiao CodigoRegiao) *Regiao {
+
+	regiao := &Regiao{
+		Codigo: int(codigoRegiao),
+	}
 
 	return regiao
 }

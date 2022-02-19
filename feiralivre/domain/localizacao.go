@@ -15,8 +15,8 @@ type Localizacao struct {
 	Referencia string  `gorm:"not null"`
 }
 
-func NewLocalizacao(latitude float64, longitude float64, logradouro string, numero string, bairro string, referencia string) *Localizacao {
-	localizacao := &Localizacao{
+func NewLocalizacao(latitude float64, longitude float64, logradouro string, numero string, bairro string, referencia string) Localizacao {
+	localizacao := Localizacao{
 		Latitude:   latitude,
 		Longitude:  longitude,
 		Logradouro: logradouro,

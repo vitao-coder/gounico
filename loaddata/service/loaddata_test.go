@@ -69,6 +69,7 @@ func Test_feiraLivre_wrapDomainToEntities(t *testing.T) {
 		name            string
 		feirasLivresCSV []*domain.FeirasLivresCSV
 		want            []*entityDomain.Feira
+		wantR           []entityDomain.RegiaoGenerica
 		wantErr         bool
 	}{
 		{
@@ -96,6 +97,16 @@ func Test_feiraLivre_wrapDomainToEntities(t *testing.T) {
 			},
 			want:    expectedEntities(),
 			wantErr: false,
+			wantR: []entityDomain.RegiaoGenerica{
+				{
+					IdRegiao:  "96cc6d00b4a8c0ab00baa406441fcafd",
+					Descricao: "Leste",
+				},
+				{
+					IdRegiao:  "f2d587f4e43be6ad1cc32e10363f5828",
+					Descricao: "Leste 1",
+				},
+			},
 		},
 		{
 			name: "If pass a invalid data return a error",
@@ -122,12 +133,13 @@ func Test_feiraLivre_wrapDomainToEntities(t *testing.T) {
 			},
 			wantErr: true,
 			want:    nil,
+			wantR:   nil,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fl := &loadData{}
-			got, err := fl.wrapDomainToEntities(tt.feirasLivresCSV)
+			got, regioes, err := fl.wrapDomainToEntities(tt.feirasLivresCSV)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("wrapDomainToEntities() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -135,52 +147,10 @@ func Test_feiraLivre_wrapDomainToEntities(t *testing.T) {
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("wrapDomainToEntities() got = %v, want %v", got, tt.want)
 			}
-		})
-	}
-}
 
-func Test_feiraLivre_distinctReusableData(t *testing.T) {
-	tests := []struct {
-		name                   string
-		feirasLivresDataToLoad []*entityDomain.Feira
-		want                   []*entityDomain.RegiaoGenerica
-		want1                  []*entityDomain.Localizacao
-	}{
-		{
-			name:                   "Return distincted values of locations and regions",
-			feirasLivresDataToLoad: buildSampleEntitiesDistinct(),
-			want: []*entityDomain.RegiaoGenerica{
-				{
-					UId:       "96cc6d00b4a8c0ab00baa406441fcafd",
-					Descricao: "Leste",
-				},
-				{
-					UId:       "f2d587f4e43be6ad1cc32e10363f5828",
-					Descricao: "Leste 1",
-				},
-			},
-			want1: []*entityDomain.Localizacao{
-				{
-					UId:        "136f36e01f165955816b6fa160d82677",
-					Latitude:   -23558733,
-					Longitude:  -46550164,
-					Logradouro: "RUA MARAGOJIPE",
-					Numero:     "S/N",
-					Bairro:     "VL FORMOSA",
-					Referencia: "TV RUA PRETORIA",
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			fl := &loadData{}
-			got, got1 := fl.distinctReusableData(tt.feirasLivresDataToLoad)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("distinctReusableData() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("distinctReusableData() got1 = %v, want %v", got1, tt.want1)
+			gotR := fl.distinctReusableData(regioes)
+			if !reflect.DeepEqual(gotR, tt.wantR) {
+				t.Errorf("distinctReusableData() got = %v, want %v", gotR, tt.wantR)
 			}
 		})
 	}
@@ -230,33 +200,9 @@ func expectedEntities() []*entityDomain.Feira {
 		WithLocalizacao(-23558733, -46550164, feiraCSV.Logradouro, feiraCSV.Numero, feiraCSV.Bairro, feiraCSV.Referencia).
 		WithSubPrefeitura(26, feiraCSV.SubPrefe)
 
-	builderFeira.AddRegiao(feiraCSV.Regiao5, 5)
-	builderFeira.AddRegiao(feiraCSV.Regiao8, 8)
+	builderFeira.WithRegioes(feiraCSV.Regiao5, feiraCSV.Regiao8)
 
 	feirasEntities = append(feirasEntities, builderFeira.Build())
-
-	return feirasEntities
-}
-
-func buildSampleEntitiesDistinct() []*entityDomain.Feira {
-
-	var feirasEntities []*entityDomain.Feira
-
-	for i := 0; i < 3; i++ {
-		feiraCSV := buildSampleFeirasLivresCSV()
-
-		builderFeira := builder.NewFeiraLivreBuilder()
-		builderFeira.
-			WithFeira(1, feiraCSV.NomeFeira, feiraCSV.Registro, feiraCSV.SetCens, feiraCSV.AreaP).
-			WithDistrito(87, feiraCSV.Distrito).
-			WithLocalizacao(-23558733, -46550164, feiraCSV.Logradouro, feiraCSV.Numero, feiraCSV.Bairro, feiraCSV.Referencia).
-			WithSubPrefeitura(26, feiraCSV.SubPrefe)
-
-		builderFeira.AddRegiao(feiraCSV.Regiao5, 5)
-		builderFeira.AddRegiao(feiraCSV.Regiao8, 8)
-
-		feirasEntities = append(feirasEntities, builderFeira.Build())
-	}
 
 	return feirasEntities
 }
