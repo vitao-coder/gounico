@@ -1,5 +1,5 @@
 
->**Requisitos: Docker ou Docker For Windows com WSL2 e/ou Go 1.17 + MySQL Community na maquina local**
+>**Requisitos: Docker ou Docker For Windows com WSL2 e ou Go 1.17 + MySQL Community na maquina local**
 
 >**Utilizar o arquivo CSV que esta em gounico\csv, que contém uma pequena higienização.**
 **O arquivo original esta faltando uma "," ao final da ultima linha. Essa foi a unica higienização manual**
