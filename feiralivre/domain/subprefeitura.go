@@ -1,8 +1,8 @@
 package domain
 
 type SubPrefeitura struct {
-	Id            int      `gorm:"primary_key;"`
-	SubPrefeitura string   `gorm:"not null"`
-	IdRegiao      int      `gorm:"not null;index:,"`
-	Regioes       []Regiao `gorm:"foreignKey:ID;References:IdRegiao;"`
+	Id            int      `json:"id,omitempty"`
+	SubPrefeitura string   `json:"sub_prefeitura,omitempty"`
+	IdRegiao      int      `json:"id_regiao,omitempty"`
+	Regioes       []Regiao `json:"regioes,omitempty"`
 }

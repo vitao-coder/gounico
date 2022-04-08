@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"gounico/feiralivre"
 	"net/http"
-	"strconv"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -29,16 +28,8 @@ func (h ExcluirFeiraHandler) HttpPath() string {
 
 func (h ExcluirFeiraHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	param := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(param)
 
-	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Error in URL params.")
-		return
-	}
-
-	apiError := h.feiraLivreService.ExcluirFeira(r.Context(), uint(id))
+	apiError := h.feiraLivreService.ExcluirFeira(r.Context(), param)
 
 	if apiError != nil {
 		w.Header().Set("Content-Type", "application/json")

@@ -1,6 +1,8 @@
 package domain
 
-import "strconv"
+import (
+	"strconv"
+)
 
 type FeiraRequest struct {
 	Id         string `json:"id,omitempty" `

@@ -2,11 +2,12 @@
 server:
   environment: "development"
   host: "localhost"
-  port: 8000
+  port: 8008
   logpath: "../gounico/logs/gounico.log"
 database:
-    DB_USERNAME : "root"
-    DB_PASSWORD : "root"
-    DB_NAME : "gounico"
-    DB_HOST : "127.0.0.1"
-    DB_PORT : "3306"
+  table: "feiras"
+  region: "us-east-1"
+  accessKeyID: "dummy"
+  secretAccessKey: "dummy"
+  sessionToken: "dummy"
+  endpointURL: "http://localhost:8000"

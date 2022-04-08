@@ -7,8 +7,7 @@ import (
 )
 
 type FeiraLivre interface {
-	BuscarFeiraPorBairro(ctx context.Context, bairro string) ([]*domain.Feira, *errors.ServiceError)
-	BuscarFeiraPorDistrito(ctx context.Context, distrito string) ([]*domain.Feira, *errors.ServiceError)
-	ExcluirFeira(ctx context.Context, feiraID uint) *errors.ServiceError
 	NovaFeira(ctx context.Context, request *domain.FeiraRequest) *errors.ServiceError
+	ExcluirFeira(ctx context.Context, feiraID string) *errors.ServiceError
+	BuscarFeiraPorDistrito(ctx context.Context, distritoID string) ([]domain.Feira, *errors.ServiceError)
 }

@@ -6,11 +6,12 @@ type Configuration struct {
 }
 
 type Database struct {
-	Username string `yaml:"DB_USERNAME"`
-	Password string `yaml:"DB_PASSWORD"`
-	Name     string `yaml:"DB_NAME"`
-	Host     string `yaml:"DB_HOST"`
-	Port     string `yaml:"DB_PORT"`
+	Maintable       string `yaml:"table"`
+	Region          string `yaml:"region"`
+	AccessKeyID     string `yaml:"accessKeyID"`
+	SecretAccessKey string `yaml:"secretAccessKey"`
+	SessionToken    string `yaml:"sessionToken"`
+	EndpointURL     string `yaml:"endpointURL"`
 }
 
 type Server struct {

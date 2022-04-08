@@ -17,7 +17,7 @@ func NewFeiraLivreBuilder() *FeiraLivreBuilder {
 
 func (flb *FeiraLivreBuilder) WithFeira(id int, nome string, registro string, setCens string, areaP string) *FeiraLivreBuilder {
 	feira := flb.feiraLivre
-	feira.ID = uint(id)
+	feira.Id = id
 	feira.Nome = nome
 	feira.Registro = registro
 	feira.SetCens = setCens
@@ -64,11 +64,11 @@ func (flb *FeiraLivreBuilder) WithRegioes(descricaoRegiao5 string, descricaoRegi
 
 	regiao5 := domain.NewRegiao(domain.CodigoRegiao(5))
 	regiaoGenerica5 := domain.NewRegiaoGenerica(descricaoRegiao5)
-	regiao5.IdRegiaoGenerica = regiaoGenerica5.IdRegiao
+	regiao5.IdRegiaoGenerica = regiaoGenerica5.Id
 
 	regiao8 := domain.NewRegiao(domain.CodigoRegiao(8))
 	regiaoGenerica8 := domain.NewRegiaoGenerica(descricaoRegiao8)
-	regiao8.IdRegiaoGenerica = regiaoGenerica8.IdRegiao
+	regiao8.IdRegiaoGenerica = regiaoGenerica8.Id
 
 	feira.SubPrefeitura.Regioes = append(feira.SubPrefeitura.Regioes, *regiao5, *regiao8)
 	flb.regioesGenericas = append(flb.regioesGenericas, regiaoGenerica5, regiaoGenerica8)

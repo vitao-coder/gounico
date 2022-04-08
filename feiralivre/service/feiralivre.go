@@ -4,16 +4,20 @@ import (
 	"context"
 	"gounico/feiralivre/domain"
 	"gounico/feiralivre/domain/builder"
+	internalRepo "gounico/internal/repository"
 	"gounico/pkg/errors"
-	"gounico/repository"
 	"strings"
 )
 
+const primaryType = "feira"
+const secondaryType = "distrito"
+const regiaoCutSet = " "
+
 type feiraLivre struct {
-	repository repository.Repository
+	repository internalRepo.Repository
 }
 
-func NewFeiraLivreService(repository repository.Repository) *feiraLivre {
+func NewFeiraLivreService(repository internalRepo.Repository) *feiraLivre {
 	return &feiraLivre{
 		repository: repository,
 	}
@@ -22,7 +26,7 @@ func NewFeiraLivreService(repository repository.Repository) *feiraLivre {
 func (f *feiraLivre) NovaFeira(ctx context.Context, request *domain.FeiraRequest) *errors.ServiceError {
 	feiraID, distritoID, longitude, latitude, subPrefID, err := request.StringsToPrimitiveTypes()
 	if err != nil {
-		return nil
+		return errors.BadRequestError("data request is not valid")
 	}
 
 	builderFeira := builder.NewFeiraLivreBuilder()
@@ -30,97 +34,44 @@ func (f *feiraLivre) NovaFeira(ctx context.Context, request *domain.FeiraRequest
 		WithFeira(feiraID, request.NomeFeira, request.Registro, request.SetCens, request.AreaP).
 		WithDistrito(distritoID, request.Distrito).
 		WithLocalizacao(latitude, longitude, request.Logradouro, request.Numero, request.Bairro, request.Referencia).
-		WithSubPrefeitura(subPrefID, request.SubPrefe)
-
-	builderFeira.WithRegioes(strings.TrimRight(strings.TrimLeft(request.Regiao5, " "), " "), strings.TrimRight(strings.TrimLeft(request.Regiao8, " "), " "))
+		WithSubPrefeitura(subPrefID, request.SubPrefe).
+		WithRegioes(strings.TrimRight(strings.TrimLeft(request.Regiao5, regiaoCutSet), regiaoCutSet), strings.TrimRight(strings.TrimLeft(request.Regiao8, regiaoCutSet), regiaoCutSet))
 	feiraEntity := builderFeira.Build()
 
-	localizacao := *&domain.Localizacao{}
-
-	db := f.repository.DB()
-
-	if locaErr := db.Model(&domain.Localizacao{}).First(&localizacao, "uid = ?", feiraEntity.Localizacao.UId); locaErr.Error != nil {
-		if locaErr.Error.Error() != "record not found" {
-			return errors.InternalServerError("Error save new Feira", locaErr.Error)
-		}
-	}
-	dbFeira := db.WithContext(ctx).Model(&domain.Feira{})
-	if localizacao.UId != "" {
-		feiraEntity.UIdLocalizacao = localizacao.UId
-		dbFeira = dbFeira.Omit("Localizacao")
-	}
-
-	if err := dbFeira.Create(&feiraEntity); err.Error != nil {
-		return errors.InternalServerError("Error save new Feira", err.Error)
+	if err := f.repository.Save(feiraEntity); err != nil {
+		return err
 	}
 	return nil
 }
 
-func (f *feiraLivre) ExcluirFeira(ctx context.Context, feiraID uint) *errors.ServiceError {
-	db := f.repository.DB().WithContext(ctx)
+func (f *feiraLivre) ExcluirFeira(ctx context.Context, feiraID string) *errors.ServiceError {
 
-	var exists bool
-	err := db.Model(&domain.Feira{}).
-		Select("count(*) > 0").
-		Where("id = ?", feiraID).
-		Find(&exists)
+	feira, err := f.repository.GetByPrimaryID(feiraID, primaryType)
 
-	if !exists {
+	if err != nil {
+		return err
+	}
+	if feira == nil {
 		return errors.NotFoundError()
 	}
 
-	err = db.Delete(&domain.Feira{}, feiraID)
-
-	if err.Error != nil {
-		return errors.InternalServerError("Error on delete.", err.Error)
+	if err := f.repository.Delete(feiraID); err != nil {
+		return err
 	}
+
 	return nil
 }
 
-func (f *feiraLivre) AlterarFeira(feiraID uint, request domain.FeiraRequest) {
+func (f *feiraLivre) BuscarFeiraPorDistrito(ctx context.Context, distritoID string) ([]domain.Feira, *errors.ServiceError) {
+	var feirasPorDistrito []domain.Feira
 
-}
+	feira, err := f.repository.GetBySecondaryID(distritoID, secondaryType)
 
-func (f *feiraLivre) BuscarFeiraPorBairro(ctx context.Context, bairro string) ([]*domain.Feira, *errors.ServiceError) {
-	var feirasPorBairro []*domain.Feira
-
-	db := f.repository.DB().WithContext(ctx)
-
-	err := db.Joins("JOIN localizacaos on localizacaos.uid=feiras.uid_localizacao").
-		Where("localizacaos.bairro like ?", "%"+bairro+"%").
-		Preload("Localizacao").
-		Preload("Distrito").
-		Preload("SubPrefeitura").
-		Find(&feirasPorBairro)
-
-	if err.Error != nil {
-		return nil, errors.InternalServerError("erro ao consultar por bairro", err.Error)
+	if err != nil {
+		return nil, err
 	}
 
-	if feirasPorBairro == nil || len(feirasPorBairro) < 1 {
-		return nil, errors.NotFoundError()
-	}
-
-	return feirasPorBairro, nil
-}
-
-func (f *feiraLivre) BuscarFeiraPorDistrito(ctx context.Context, distrito string) ([]*domain.Feira, *errors.ServiceError) {
-	var feirasPorDistrito []*domain.Feira
-
-	db := f.repository.DB().WithContext(ctx)
-
-	err := db.Joins("JOIN distritos on distritos.ID=feiras.id_distrito").
-		Where("distritos.descricao like ?", "%"+distrito+"%").
-		Preload("Localizacao").
-		Preload("Distrito").
-		Preload("SubPrefeitura").
-		Find(&feirasPorDistrito)
-
-	if err.Error != nil {
-		return nil, errors.InternalServerError("erro ao consultar por distrito", err.Error)
-	}
-
-	if feirasPorDistrito == nil || len(feirasPorDistrito) < 1 {
+	if feira == nil || len(feirasPorDistrito) < 1 {
 		return nil, errors.NotFoundError()
 	}
 

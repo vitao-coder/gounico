@@ -6,13 +6,13 @@ import (
 )
 
 type Localizacao struct {
-	UId        string  `gorm:"type:char(32);primary_key; index:,unique"`
-	Latitude   float64 `gorm:"not null"`
-	Longitude  float64 `gorm:"not null"`
-	Logradouro string  `gorm:"not null"`
-	Numero     string  `gorm:"not null"`
-	Bairro     string  `gorm:"not null"`
-	Referencia string  `gorm:"not null"`
+	Id         string  `json:"id,omitempty"`
+	Latitude   float64 `json:"latitude,omitempty"`
+	Longitude  float64 `json:"longitude,omitempty"`
+	Logradouro string  `json:"logradouro,omitempty"`
+	Numero     string  `json:"numero,omitempty"`
+	Bairro     string  `json:"bairro,omitempty"`
+	Referencia string  `json:"referencia,omitempty"`
 }
 
 func NewLocalizacao(latitude float64, longitude float64, logradouro string, numero string, bairro string, referencia string) Localizacao {
@@ -24,7 +24,7 @@ func NewLocalizacao(latitude float64, longitude float64, logradouro string, nume
 		Bairro:     bairro,
 		Referencia: referencia,
 	}
-	localizacao.UId = localizacao.uniqueID()
+	localizacao.Id = localizacao.uniqueID()
 
 	return localizacao
 }

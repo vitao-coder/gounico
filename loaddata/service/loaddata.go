@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	entityDomain "gounico/feiralivre/domain"
+	domainFeira "gounico/feiralivre/domain"
 	"gounico/feiralivre/domain/builder"
+	"gounico/internal/repository"
 	"gounico/loaddata/domain"
 	"gounico/pkg/errors"
-	"gounico/repository"
 	"strings"
 
 	"github.com/gocarina/gocsv"
@@ -30,20 +30,14 @@ func (fl *loadData) ProcessCSVToDatabase(ctx context.Context, csvByteArray []byt
 		return errors.BadRequestError("Error wrap CSV. Please verify file columns and data types.")
 	}
 
-	feiraLivreEntities, regioes, err := fl.wrapDomainToEntities(csvDomain)
+	feiraLivreEntities, err := fl.wrapDomainToEntities(csvDomain)
 	if err != nil {
 		return errors.InternalServerError("Error translate CSV into domains.", err)
 	}
 
-	regioesDistincted := fl.distinctReusableData(regioes)
-	err = fl.saveReusableData(ctx, regioesDistincted)
-	if err != nil {
-		return errors.InternalServerError("Error save reusable data.", err)
-	}
-
-	err = fl.saveDataToDatabase(ctx, feiraLivreEntities)
-	if err != nil {
-		return errors.InternalServerError("Error save reusable data.", err)
+	errSave := fl.saveDataToDatabase(ctx, feiraLivreEntities)
+	if errSave != nil {
+		return errSave
 	}
 
 	return nil
@@ -62,16 +56,15 @@ func (fl *loadData) wrapCSVToDomain(csvByteArray []byte) ([]*domain.FeirasLivres
 	return feirasLivresCSV, nil
 }
 
-func (fl *loadData) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivresCSV) ([]*entityDomain.Feira, []*entityDomain.RegiaoGenerica, error) {
+func (fl *loadData) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivresCSV) ([]*domainFeira.Feira, error) {
 
-	var feiraEntities []*entityDomain.Feira
-	var regioes []*entityDomain.RegiaoGenerica
+	var feiraEntities []*domainFeira.Feira
 
 	for _, feiraCSV := range feirasLivresCSV {
 
 		feiraID, distritoID, longitude, latitude, subPrefID, err := feiraCSV.StringsToPrimitiveTypes()
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
 		builderFeira := builder.NewFeiraLivreBuilder()
@@ -84,19 +77,15 @@ func (fl *loadData) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivresC
 		builderFeira.WithRegioes(strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao5, " "), " "), strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao8, " "), " "))
 
 		feiraEntity := builderFeira.Build()
-		regioesGenericas := builderFeira.BuildRegiaoGenerica()
-		regioes = append(regioes, regioesGenericas...)
-
 		feiraEntities = append(feiraEntities, feiraEntity)
-
 	}
 
-	return feiraEntities, regioes, nil
+	return feiraEntities, nil
 }
 
-func (fl *loadData) distinctReusableData(regioesGenericas []*entityDomain.RegiaoGenerica) []entityDomain.RegiaoGenerica {
-	uniqueRegions := make(map[string]entityDomain.RegiaoGenerica)
-	var regioesDistincted []entityDomain.RegiaoGenerica
+func (fl *loadData) distinctReusableData(regioesGenericas []*domainFeira.RegiaoGenerica) []domainFeira.RegiaoGenerica {
+	uniqueRegions := make(map[string]domainFeira.RegiaoGenerica)
+	var regioesDistincted []domainFeira.RegiaoGenerica
 
 	for _, regiao := range regioesGenericas {
 		if _, ok := uniqueRegions[regiao.HashCode()]; !ok {
@@ -109,20 +98,12 @@ func (fl *loadData) distinctReusableData(regioesGenericas []*entityDomain.Regiao
 	return regioesDistincted
 }
 
-func (fl *loadData) saveReusableData(ctx context.Context, regioes []entityDomain.RegiaoGenerica) error {
+func (fl *loadData) saveDataToDatabase(ctx context.Context, feirasLivresDataToLoad []*domainFeira.Feira) *errors.ServiceError {
 
-	if err := fl.repository.DB().WithContext(ctx).Model(&entityDomain.RegiaoGenerica{}).Create(&regioes); err.Error != nil {
-		return err.Error
+	for _, feira := range feirasLivresDataToLoad {
+		if err := fl.repository.Save(feira); err != nil {
+			return err
+		}
 	}
-
-	return nil
-}
-
-func (fl *loadData) saveDataToDatabase(ctx context.Context, feirasLivresDataToLoad []*entityDomain.Feira) error {
-
-	if err := fl.repository.DB().WithContext(ctx).Model(&entityDomain.Feira{}).Create(feirasLivresDataToLoad); err.Error != nil {
-		return err.Error
-	}
-
 	return nil
 }

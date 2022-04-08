@@ -2,10 +2,10 @@ package internal
 
 import (
 	"gounico/feiralivre"
-	feiralivreS "gounico/feiralivre/service"
+	feiraliv "gounico/feiralivre/service"
+	"gounico/internal/repository"
 	"gounico/loaddata"
 	"gounico/loaddata/service"
-	"gounico/repository"
 
 	"go.uber.org/fx"
 )
@@ -21,6 +21,6 @@ func NewLoadDataService(repository repository.Repository) loaddata.LoadData {
 }
 
 func NewFeiraLivreService(repository repository.Repository) feiralivre.FeiraLivre {
-	feiraLivreService := feiralivreS.NewFeiraLivreService(repository)
+	feiraLivreService := feiraliv.NewFeiraLivreService(repository)
 	return feiraLivreService
 }
