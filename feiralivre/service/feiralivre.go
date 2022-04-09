@@ -7,6 +7,8 @@ import (
 	internalRepo "gounico/internal/repository"
 	"gounico/pkg/errors"
 	"strings"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 const primaryType = "feira"
@@ -37,6 +39,8 @@ func (f *feiraLivre) NovaFeira(ctx context.Context, request *domain.FeiraRequest
 		WithSubPrefeitura(subPrefID, request.SubPrefe).
 		WithRegioes(strings.TrimRight(strings.TrimLeft(request.Regiao5, regiaoCutSet), regiaoCutSet), strings.TrimRight(strings.TrimLeft(request.Regiao8, regiaoCutSet), regiaoCutSet))
 	feiraEntity := builderFeira.Build()
+	feiraEntity.Indexes(request.Id, primaryType, request.CodDist, secondaryType)
+	feiraEntity.Data(feiraEntity)
 
 	if err := f.repository.Save(feiraEntity); err != nil {
 		return err
@@ -63,16 +67,25 @@ func (f *feiraLivre) ExcluirFeira(ctx context.Context, feiraID string) *errors.S
 }
 
 func (f *feiraLivre) BuscarFeiraPorDistrito(ctx context.Context, distritoID string) ([]domain.Feira, *errors.ServiceError) {
-	var feirasPorDistrito []domain.Feira
 
-	feira, err := f.repository.GetBySecondaryID(distritoID, secondaryType)
+	feiras, err := f.repository.GetBySecondaryID(distritoID, secondaryType)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if feira == nil || len(feirasPorDistrito) < 1 {
+	if feiras == nil {
 		return nil, errors.NotFoundError()
+	}
+
+	feirasPorDistrito := []domain.Feira{}
+
+	for _, domainEntity := range *feiras {
+		var domainFeira domain.Feira
+		if err := mapstructure.Decode(domainEntity.Data, &domainFeira); err != nil {
+			return nil, errors.BadRequestError("Decoding data from BD error.")
+		}
+		feirasPorDistrito = append(feirasPorDistrito, domainFeira)
 	}
 
 	return feirasPorDistrito, nil

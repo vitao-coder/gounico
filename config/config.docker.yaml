@@ -10,4 +10,4 @@ database:
   accessKeyID: "dummy"
   secretAccessKey: "dummy"
   sessionToken: "dummy"
-  endpointURL: "http://localhost:8000"
+  endpointURL: "http://127.0.0.1:8000"

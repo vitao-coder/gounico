@@ -25,6 +25,12 @@ type FeiraRequest struct {
 }
 
 func (fr *FeiraRequest) StringsToPrimitiveTypes() (feiraID int, distritoID int, longitude float64, latitude float64, subPrefID int, err error) {
+
+	feiraID, err = strconv.Atoi(fr.Id)
+	if err != nil {
+		return
+	}
+
 	distritoID, err = strconv.Atoi(fr.CodDist)
 	if err != nil {
 		return

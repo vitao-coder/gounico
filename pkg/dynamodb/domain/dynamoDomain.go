@@ -1,23 +1,31 @@
 package domain
 
+import "time"
+
 type Data interface {
 	IsDataValid() error
 	DataDomain() interface{}
 }
 
-const separator = "#"
+const Separator = "#"
 
 type DynamoDomain struct {
-	ID              string `dynamo:"ID,hash" index:"Prim-ID-index,hash"`
-	IDType          string `dynamo:"IDTYPE"`
-	PartitionID     string `dynamo:"PID,hash" index:"Sec-PID-index,range"`
-	PartitionIDType string `dynamo:"PIDTYPE"`
+	PartitionID   string    `dynamo:"PID,hash" index:"Seq-ID-index,range"`
+	Time          time.Time `dynamo:",range"`
+	PrimaryID     string    `localIndex:"ID-Seq-index,range" index:"Seq-ID-index,hash"`
+	ID            string    `dynamo:"ID" index:"UUID-index,hash"`
+	PrimaryType   string
+	PartitionType string
+	Data          interface{}
 }
 
-func (domain *DynamoDomain) WithIndexes(id string, idType string, partitionID string, partitionIDType string) *DynamoDomain {
-	domain.ID = idType + separator + id + separator + partitionIDType + separator + partitionID
-	domain.IDType = idType
-	domain.PartitionID = partitionIDType + separator + partitionID
-	domain.PartitionIDType = partitionIDType
-	return domain
+func NewDomainIndexes(id string, idType string, partitionID string, partitionIDType string) *DynamoDomain {
+	return &DynamoDomain{
+		ID:            idType + Separator + id + Separator + partitionIDType + Separator + partitionID,
+		PrimaryID:     idType + Separator + id,
+		PrimaryType:   idType,
+		PartitionID:   partitionIDType + Separator + partitionID,
+		PartitionType: partitionIDType,
+		Time:          time.Now(),
+	}
 }

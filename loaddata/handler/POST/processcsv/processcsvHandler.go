@@ -29,6 +29,9 @@ func (h ProcessCSVHandler) HttpPath() string {
 func (h ProcessCSVHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	file, _, err := r.FormFile("file")
 	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode("Error receiving file bytes.")
 		return
 	}
 	bodyBytes := bufio.NewReader(file)

@@ -6,7 +6,7 @@ import (
 )
 
 type Feira struct {
-	*domain.DynamoDomain
+	indexes        *domain.DynamoDomain
 	Id             int           `json:"id,omitempty"`
 	Nome           string        `json:"nome,omitempty"`
 	Registro       string        `json:"registro,omitempty"`
@@ -21,12 +21,20 @@ type Feira struct {
 }
 
 func (f *Feira) IsDataValid() error {
-	if f.ID == "" || f.PartitionID == "" || f.IDType == "" || f.PartitionIDType == "" {
-		return errors.New("sensible data not informed")
+	if f.indexes.ID == "" || f.indexes.PartitionID == "" || f.indexes.PrimaryType == "" || f.indexes.PartitionType == "" {
+		return errors.New("index data not informed")
 	}
 	return nil
 }
 
 func (f *Feira) DataDomain() interface{} {
-	return f
+	return f.indexes
+}
+
+func (f *Feira) Indexes(primaryId string, primaryType string, secondaryID string, secondaryType string) {
+	f.indexes = domain.NewDomainIndexes(primaryId, primaryType, secondaryID, secondaryType)
+}
+
+func (f *Feira) Data(feiraDomainData *Feira) {
+	f.indexes.Data = feiraDomainData
 }
