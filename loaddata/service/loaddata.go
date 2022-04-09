@@ -12,6 +12,10 @@ import (
 	"github.com/gocarina/gocsv"
 )
 
+const primaryType = "feira"
+const secondaryType = "distrito"
+const regiaoCutSet = " "
+
 type loadData struct {
 	repository repository.Repository
 }
@@ -74,9 +78,11 @@ func (fl *loadData) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivresC
 			WithLocalizacao(latitude, longitude, feiraCSV.Logradouro, feiraCSV.Numero, feiraCSV.Bairro, feiraCSV.Referencia).
 			WithSubPrefeitura(subPrefID, feiraCSV.SubPrefe)
 
-		builderFeira.WithRegioes(strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao5, " "), " "), strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao8, " "), " "))
+		builderFeira.WithRegioes(strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao5, regiaoCutSet), regiaoCutSet), strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao8, regiaoCutSet), regiaoCutSet))
 
 		feiraEntity := builderFeira.Build()
+		feiraEntity.Indexes(feiraCSV.Id, primaryType, feiraCSV.CodDist, secondaryType)
+		feiraEntity.Data(feiraEntity)
 		feiraEntities = append(feiraEntities, feiraEntity)
 	}
 
