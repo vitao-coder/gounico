@@ -1,10 +1,10 @@
-package loaddata
+package feiralivre
 
 import (
 	"context"
 	"gounico/pkg/errors"
 )
 
-type LoadData interface {
+type ProcessCSV interface {
 	ProcessCSVToDatabase(ctx context.Context, csvByteArray []byte) *errors.ServiceError
 }

@@ -1,7 +1,5 @@
 package domain
 
-import "time"
-
 type Data interface {
 	IsDataValid() error
 	DataDomain() interface{}
@@ -10,10 +8,9 @@ type Data interface {
 const Separator = "#"
 
 type DynamoDomain struct {
-	PartitionID   string    `dynamo:"PID,hash" index:"Seq-ID-index,range"`
-	Time          time.Time `dynamo:",range"`
-	PrimaryID     string    `localIndex:"ID-Seq-index,range" index:"Seq-ID-index,hash"`
-	ID            string    `dynamo:"ID" index:"UUID-index,hash"`
+	PartitionID   string `dynamo:"PID,hash" index:"Seq-ID-index,range"`
+	ID            string `dynamo:"ID,range"`
+	PrimaryID     string `dynamo:"PRID" localIndex:"ID-Seq-index,range" index:"Seq-ID-index,hash"`
 	PrimaryType   string
 	PartitionType string
 	Data          interface{}
@@ -21,11 +18,10 @@ type DynamoDomain struct {
 
 func NewDomainIndexes(id string, idType string, partitionID string, partitionIDType string) *DynamoDomain {
 	return &DynamoDomain{
-		ID:            idType + Separator + id + Separator + partitionIDType + Separator + partitionID,
+		ID:            partitionIDType + Separator + partitionID + idType + Separator + id,
 		PrimaryID:     idType + Separator + id,
 		PrimaryType:   idType,
 		PartitionID:   partitionIDType + Separator + partitionID,
 		PartitionType: partitionIDType,
-		Time:          time.Now(),
 	}
 }

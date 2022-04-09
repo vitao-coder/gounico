@@ -2,31 +2,27 @@ package service
 
 import (
 	"context"
+	"gounico/constants"
 	domainFeira "gounico/feiralivre/domain"
 	"gounico/feiralivre/domain/builder"
 	"gounico/internal/repository"
-	"gounico/loaddata/domain"
 	"gounico/pkg/errors"
 	"strings"
 
 	"github.com/gocarina/gocsv"
 )
 
-const primaryType = "feira"
-const secondaryType = "distrito"
-const regiaoCutSet = " "
-
-type loadData struct {
+type processCSV struct {
 	repository repository.Repository
 }
 
-func NewLoadData(repository repository.Repository) *loadData {
-	return &loadData{
+func NewProcessCSV(repository repository.Repository) *processCSV {
+	return &processCSV{
 		repository: repository,
 	}
 }
 
-func (fl *loadData) ProcessCSVToDatabase(ctx context.Context, csvByteArray []byte) *errors.ServiceError {
+func (fl *processCSV) ProcessCSVToDatabase(ctx context.Context, csvByteArray []byte) *errors.ServiceError {
 
 	csvDomain, err := fl.wrapCSVToDomain(csvByteArray)
 
@@ -47,9 +43,9 @@ func (fl *loadData) ProcessCSVToDatabase(ctx context.Context, csvByteArray []byt
 	return nil
 }
 
-func (fl *loadData) wrapCSVToDomain(csvByteArray []byte) ([]*domain.FeirasLivresCSV, error) {
+func (fl *processCSV) wrapCSVToDomain(csvByteArray []byte) ([]*domainFeira.FeirasLivresCSV, error) {
 
-	feirasLivresCSV := []*domain.FeirasLivresCSV{}
+	feirasLivresCSV := []*domainFeira.FeirasLivresCSV{}
 
 	err := gocsv.UnmarshalBytes(csvByteArray, &feirasLivresCSV)
 
@@ -60,7 +56,7 @@ func (fl *loadData) wrapCSVToDomain(csvByteArray []byte) ([]*domain.FeirasLivres
 	return feirasLivresCSV, nil
 }
 
-func (fl *loadData) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivresCSV) ([]*domainFeira.Feira, error) {
+func (fl *processCSV) wrapDomainToEntities(feirasLivresCSV []*domainFeira.FeirasLivresCSV) ([]*domainFeira.Feira, error) {
 
 	var feiraEntities []*domainFeira.Feira
 
@@ -78,10 +74,10 @@ func (fl *loadData) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivresC
 			WithLocalizacao(latitude, longitude, feiraCSV.Logradouro, feiraCSV.Numero, feiraCSV.Bairro, feiraCSV.Referencia).
 			WithSubPrefeitura(subPrefID, feiraCSV.SubPrefe)
 
-		builderFeira.WithRegioes(strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao5, regiaoCutSet), regiaoCutSet), strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao8, regiaoCutSet), regiaoCutSet))
+		builderFeira.WithRegioes(strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao5, constants.RegiaoCutSet), constants.RegiaoCutSet), strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao8, constants.RegiaoCutSet), constants.RegiaoCutSet))
 
 		feiraEntity := builderFeira.Build()
-		feiraEntity.Indexes(feiraCSV.Id, primaryType, feiraCSV.CodDist, secondaryType)
+		feiraEntity.Indexes(feiraCSV.Id, constants.PrimaryType, feiraCSV.CodDist, constants.SecondaryType)
 		feiraEntity.Data(feiraEntity)
 		feiraEntities = append(feiraEntities, feiraEntity)
 	}
@@ -89,7 +85,7 @@ func (fl *loadData) wrapDomainToEntities(feirasLivresCSV []*domain.FeirasLivresC
 	return feiraEntities, nil
 }
 
-func (fl *loadData) distinctReusableData(regioesGenericas []*domainFeira.RegiaoGenerica) []domainFeira.RegiaoGenerica {
+func (fl *processCSV) distinctReusableData(regioesGenericas []*domainFeira.RegiaoGenerica) []domainFeira.RegiaoGenerica {
 	uniqueRegions := make(map[string]domainFeira.RegiaoGenerica)
 	var regioesDistincted []domainFeira.RegiaoGenerica
 
@@ -104,12 +100,14 @@ func (fl *loadData) distinctReusableData(regioesGenericas []*domainFeira.RegiaoG
 	return regioesDistincted
 }
 
-func (fl *loadData) saveDataToDatabase(ctx context.Context, feirasLivresDataToLoad []*domainFeira.Feira) *errors.ServiceError {
-
+func (fl *processCSV) saveDataToDatabase(ctx context.Context, feirasLivresDataToLoad []*domainFeira.Feira) *errors.ServiceError {
+	var batchSaveArray []interface{}
 	for _, feira := range feirasLivresDataToLoad {
-		if err := fl.repository.Save(feira); err != nil {
-			return err
-		}
+		batchSaveArray = append(batchSaveArray, feira.DataDomain())
+	}
+
+	if err := fl.repository.BatchSave(batchSaveArray); err != nil {
+		return err
 	}
 	return nil
 }

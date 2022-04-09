@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"gounico/constants"
 	"gounico/feiralivre/domain"
 	"gounico/feiralivre/domain/builder"
 	internalRepo "gounico/internal/repository"
@@ -10,10 +11,6 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 )
-
-const primaryType = "feira"
-const secondaryType = "distrito"
-const regiaoCutSet = " "
 
 type feiraLivre struct {
 	repository internalRepo.Repository
@@ -25,7 +22,7 @@ func NewFeiraLivreService(repository internalRepo.Repository) *feiraLivre {
 	}
 }
 
-func (f *feiraLivre) NovaFeira(ctx context.Context, request *domain.FeiraRequest) *errors.ServiceError {
+func (f *feiraLivre) SaveFeira(ctx context.Context, request *domain.FeiraRequest) *errors.ServiceError {
 	feiraID, distritoID, longitude, latitude, subPrefID, err := request.StringsToPrimitiveTypes()
 	if err != nil {
 		return errors.BadRequestError("data request is not valid")
@@ -37,9 +34,9 @@ func (f *feiraLivre) NovaFeira(ctx context.Context, request *domain.FeiraRequest
 		WithDistrito(distritoID, request.Distrito).
 		WithLocalizacao(latitude, longitude, request.Logradouro, request.Numero, request.Bairro, request.Referencia).
 		WithSubPrefeitura(subPrefID, request.SubPrefe).
-		WithRegioes(strings.TrimRight(strings.TrimLeft(request.Regiao5, regiaoCutSet), regiaoCutSet), strings.TrimRight(strings.TrimLeft(request.Regiao8, regiaoCutSet), regiaoCutSet))
+		WithRegioes(strings.TrimRight(strings.TrimLeft(request.Regiao5, constants.RegiaoCutSet), constants.RegiaoCutSet), strings.TrimRight(strings.TrimLeft(request.Regiao8, constants.RegiaoCutSet), constants.RegiaoCutSet))
 	feiraEntity := builderFeira.Build()
-	feiraEntity.Indexes(request.Id, primaryType, request.CodDist, secondaryType)
+	feiraEntity.Indexes(request.Id, constants.PrimaryType, request.CodDist, constants.SecondaryType)
 	feiraEntity.Data(feiraEntity)
 
 	if err := f.repository.Save(feiraEntity); err != nil {
@@ -50,7 +47,7 @@ func (f *feiraLivre) NovaFeira(ctx context.Context, request *domain.FeiraRequest
 
 func (f *feiraLivre) ExcluirFeira(ctx context.Context, feiraID string) *errors.ServiceError {
 
-	feira, err := f.repository.GetByPrimaryID(feiraID, primaryType)
+	feira, err := f.repository.GetByID(feiraID, constants.PrimaryType)
 
 	if err != nil {
 		return err
@@ -59,7 +56,7 @@ func (f *feiraLivre) ExcluirFeira(ctx context.Context, feiraID string) *errors.S
 		return errors.NotFoundError()
 	}
 
-	if err := f.repository.Delete(feiraID); err != nil {
+	if err := f.repository.Delete(feiraID, constants.PrimaryType); err != nil {
 		return err
 	}
 
@@ -68,7 +65,7 @@ func (f *feiraLivre) ExcluirFeira(ctx context.Context, feiraID string) *errors.S
 
 func (f *feiraLivre) BuscarFeiraPorDistrito(ctx context.Context, distritoID string) ([]domain.Feira, *errors.ServiceError) {
 
-	feiras, err := f.repository.GetBySecondaryID(distritoID, secondaryType)
+	feiras, err := f.repository.GetBySecondaryID(distritoID, constants.SecondaryType)
 
 	if err != nil {
 		return nil, err

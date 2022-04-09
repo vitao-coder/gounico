@@ -4,19 +4,17 @@ import (
 	"gounico/feiralivre"
 	feiraliv "gounico/feiralivre/service"
 	"gounico/internal/repository"
-	"gounico/loaddata"
-	"gounico/loaddata/service"
 
 	"go.uber.org/fx"
 )
 
 var ServicesModule = fx.Provide(
-	NewLoadDataService,
+	NewProcessCSVService,
 	NewFeiraLivreService,
 )
 
-func NewLoadDataService(repository repository.Repository) loaddata.LoadData {
-	loadDataService := service.NewLoadData(repository)
+func NewProcessCSVService(repository repository.Repository) feiralivre.ProcessCSV {
+	loadDataService := feiraliv.NewProcessCSV(repository)
 	return loadDataService
 }
 

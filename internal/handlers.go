@@ -5,8 +5,7 @@ import (
 	"gounico/feiralivre/handler/DELETE/excluirfeira"
 	"gounico/feiralivre/handler/GET/buscarfeira"
 	"gounico/feiralivre/handler/POST/novafeira"
-	"gounico/loaddata"
-	"gounico/loaddata/handler/POST/processcsv"
+	"gounico/feiralivre/handler/POST/processcsv"
 
 	"go.uber.org/fx"
 )
@@ -23,7 +22,7 @@ type HandlerOutput struct {
 	Endpoint HTTPEndpoint `group:"endpoints"`
 }
 
-func NewProcessCSVHandler(service loaddata.LoadData) HandlerOutput {
+func NewProcessCSVHandler(service feiralivre.ProcessCSV) HandlerOutput {
 	handlerEndpoint := processcsv.NewProcessCSVHandler(service)
 	return HandlerOutput{
 		Endpoint: handlerEndpoint,

@@ -23,14 +23,14 @@ func (h BuscarFeiraHandler) HttpMethod() string {
 }
 
 func (h BuscarFeiraHandler) HttpPath() string {
-	return "/buscarfeira/distrito/{distritoID}"
+	return "/buscarfeira/{entity_type}/{entityID}"
 }
 
 func (h BuscarFeiraHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	param := chi.URLParam(r, "distritoID")
+	entityID := chi.URLParam(r, "entityID")
 
-	feirasRetornadas, apiError := h.feiraLivreService.BuscarFeiraPorDistrito(r.Context(), param)
+	feirasRetornadas, apiError := h.feiraLivreService.BuscarFeiraPorDistrito(r.Context(), entityID)
 
 	if apiError != nil {
 		w.Header().Set("Content-Type", "application/json")

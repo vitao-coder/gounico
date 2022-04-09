@@ -36,6 +36,15 @@ func NewDynamoDBClient(endpoint string, region string, id string, secret string,
 	return &DynamoDBClient{db: db, table: &table}
 }
 
+func (dbc *DynamoDBClient) PutBatch(batchArray []interface{}) error {
+	_, err := dbc.table.Batch().Write().Put(batchArray...).Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (dbc *DynamoDBClient) Put(dynamoData domain.Data) error {
 
 	if err := dynamoData.IsDataValid(); err != nil {
@@ -47,23 +56,24 @@ func (dbc *DynamoDBClient) Put(dynamoData domain.Data) error {
 	return nil
 }
 
-func (dbc *DynamoDBClient) GetByIDAndPID(id string, pid string, result *interface{}) error {
-
+func (dbc *DynamoDBClient) GetByIDAndPID(id string, pid string) (*domain.DynamoDomain, error) {
+	domain := &domain.DynamoDomain{}
 	if err := dbc.table.Get("ID", id).
 		Range("PID", dynamo.Equal, pid).
-		One(&result); err != nil {
-		return err
+		One(&domain); err != nil {
+		return nil, err
 	}
-	return nil
+	return domain, nil
 }
 
-func (dbc *DynamoDBClient) GetByID(id string, outResult *interface{}) error {
+func (dbc *DynamoDBClient) GetByID(id string) (*domain.DynamoDomain, error) {
+	domain := &domain.DynamoDomain{}
 
-	if err := dbc.table.Get("ID", id).
-		One(&outResult); err != nil {
-		return err
+	if err := dbc.table.Get("PRID", id).
+		One(&domain); err != nil {
+		return nil, err
 	}
-	return nil
+	return domain, nil
 }
 
 func (dbc *DynamoDBClient) GetByPID(pid string) (*[]domain.DynamoDomain, error) {

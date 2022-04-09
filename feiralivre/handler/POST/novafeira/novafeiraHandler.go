@@ -38,7 +38,7 @@ func (h NovaFeiraHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	apiError := h.feiraLivreService.NovaFeira(r.Context(), newFeira)
+	apiError := h.feiraLivreService.SaveFeira(r.Context(), newFeira)
 	if apiError != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(apiError.HttpStatusCode)

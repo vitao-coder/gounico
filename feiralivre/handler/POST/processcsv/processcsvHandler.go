@@ -3,16 +3,16 @@ package processcsv
 import (
 	"bufio"
 	"encoding/json"
-	"gounico/loaddata"
+	"gounico/feiralivre"
 	"io"
 	"net/http"
 )
 
 type ProcessCSVHandler struct {
-	loadDataService loaddata.LoadData
+	loadDataService feiralivre.ProcessCSV
 }
 
-func NewProcessCSVHandler(loadDataService loaddata.LoadData) ProcessCSVHandler {
+func NewProcessCSVHandler(loadDataService feiralivre.ProcessCSV) ProcessCSVHandler {
 	return ProcessCSVHandler{
 		loadDataService: loadDataService,
 	}
