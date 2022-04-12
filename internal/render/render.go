@@ -11,7 +11,7 @@ func renderApiResponse(w http.ResponseWriter, renderObject interface{}, httpStat
 	w.WriteHeader(httpStatusCode)
 	err := json.NewEncoder(w).Encode(renderObject)
 	if err != nil {
-		return
+		panic(err)
 	}
 }
 

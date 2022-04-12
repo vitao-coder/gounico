@@ -6,6 +6,7 @@ import (
 	"gounico/feiralivre/handler/GET/buscarfeira"
 	"gounico/feiralivre/handler/POST/novafeira"
 	"gounico/feiralivre/handler/POST/processcsv"
+	"gounico/feiralivre/handler/PUT/alterarfeira"
 
 	"go.uber.org/fx"
 )
@@ -15,6 +16,7 @@ var HandlersModule = fx.Provide(
 	NewBuscarFeiraHandler,
 	NewExcluirFeiraHandler,
 	NewNovaFeiraHandler,
+	NewAlterarFeiraHandler,
 )
 
 type HandlerOutput struct {
@@ -45,6 +47,13 @@ func NewExcluirFeiraHandler(service feiralivre.FeiraLivre) HandlerOutput {
 
 func NewNovaFeiraHandler(service feiralivre.FeiraLivre) HandlerOutput {
 	handlerEndpoint := novafeira.NewNovaFeiraHandler(service)
+	return HandlerOutput{
+		Endpoint: handlerEndpoint,
+	}
+}
+
+func NewAlterarFeiraHandler(service feiralivre.FeiraLivre) HandlerOutput {
+	handlerEndpoint := alterarfeira.NewAlteraFeiraHandler(service)
 	return HandlerOutput{
 		Endpoint: handlerEndpoint,
 	}
