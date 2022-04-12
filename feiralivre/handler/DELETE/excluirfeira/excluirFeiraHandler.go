@@ -1,8 +1,8 @@
 package excluirfeira
 
 import (
-	"encoding/json"
 	"gounico/feiralivre"
+	"gounico/internal/render"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -32,13 +32,8 @@ func (h ExcluirFeiraHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	apiError := h.feiraLivreService.ExcluirFeira(r.Context(), param)
 
 	if apiError != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(apiError.HttpStatusCode)
-		json.NewEncoder(w).Encode(apiError)
+		render.RenderApiError(w, *apiError)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusNoContent)
-	json.NewEncoder(w).Encode(nil)
+	render.RenderSuccess(w, http.StatusNoContent, nil)
 }

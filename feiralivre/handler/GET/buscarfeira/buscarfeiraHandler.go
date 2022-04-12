@@ -1,8 +1,8 @@
 package buscarfeira
 
 import (
-	"encoding/json"
 	"gounico/feiralivre"
+	"gounico/internal/render"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -33,13 +33,9 @@ func (h BuscarFeiraHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	feirasRetornadas, apiError := h.feiraLivreService.BuscarFeiraPorDistrito(r.Context(), entityID)
 
 	if apiError != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(apiError.HttpStatusCode)
-		json.NewEncoder(w).Encode(apiError)
+		render.RenderApiError(w, *apiError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(feirasRetornadas)
+	render.RenderSuccess(w, http.StatusOK, feirasRetornadas)
 }

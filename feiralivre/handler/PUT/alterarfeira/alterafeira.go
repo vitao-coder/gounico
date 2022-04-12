@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"gounico/feiralivre"
 	"gounico/feiralivre/domain"
+	"gounico/internal/render"
 	"io/ioutil"
 	"net/http"
 )
@@ -27,25 +28,20 @@ func (h AlteraFeiraHandler) HttpPath() string {
 }
 
 func (h AlteraFeiraHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	newFeira := &domain.FeiraRequest{}
+	updFeira := &domain.FeiraRequest{}
 
 	body, err := ioutil.ReadAll(r.Body)
-	err = json.Unmarshal(body, &newFeira)
+	err = json.Unmarshal(body, &updFeira)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode("Error unmarshal request.")
+		render.RenderRequestError(w, err)
 		return
 	}
 
-	apiError := h.feiraLivreService.SaveFeira(r.Context(), newFeira)
+	apiError := h.feiraLivreService.SaveFeira(r.Context(), updFeira)
 	if apiError != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(apiError.HttpStatusCode)
-		json.NewEncoder(w).Encode(apiError)
+		render.RenderApiError(w, *apiError)
 		return
 	}
-
-	w.WriteHeader(http.StatusCreated)
+	render.RenderSuccess(w, http.StatusOK, nil)
 	return
 }
