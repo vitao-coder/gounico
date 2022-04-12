@@ -57,23 +57,14 @@ func (dbc *DynamoDBClient) Put(dynamoData domain.Data) error {
 }
 
 func (dbc *DynamoDBClient) GetByIDAndPID(id string, pid string) (*domain.DynamoDomain, error) {
-	domain := &domain.DynamoDomain{}
-	if err := dbc.table.Get("ID", id).
-		Range("PID", dynamo.Equal, pid).
-		One(&domain); err != nil {
+	domainR := &domain.DynamoDomain{}
+
+	if err := dbc.table.Get("PID", pid).
+		Range("ID", dynamo.Equal, id).
+		One(&domainR); err != nil {
 		return nil, err
 	}
-	return domain, nil
-}
-
-func (dbc *DynamoDBClient) GetByID(id string) (*domain.DynamoDomain, error) {
-	domain := &domain.DynamoDomain{}
-
-	if err := dbc.table.Get("PRID", id).
-		One(&domain); err != nil {
-		return nil, err
-	}
-	return domain, nil
+	return domainR, nil
 }
 
 func (dbc *DynamoDBClient) GetByPID(pid string) (*[]domain.DynamoDomain, error) {
@@ -97,16 +88,9 @@ func (dbc *DynamoDBClient) Update(id string, dynamoData domain.Data) error {
 	return nil
 }
 
-func (dbc *DynamoDBClient) DeleteByID(id string) error {
-	if errUpd := dbc.table.Delete("ID", id).Run(); errUpd != nil {
-		return errUpd
-	}
-	return nil
-}
-
-func (dbc *DynamoDBClient) DeleteByPID(id string) error {
-	if errUpd := dbc.table.Delete("PID", id).Run(); errUpd != nil {
-		return errUpd
+func (dbc *DynamoDBClient) DeleteByIDAndPID(id string, pid string) error {
+	if err := dbc.table.Delete("PID", pid).Range("ID", id).Run(); err != nil {
+		return err
 	}
 	return nil
 }

@@ -9,9 +9,9 @@ import (
 type Repository interface {
 	BatchSave(dynamoData []interface{}) *errors.ServiceError
 	Save(dynamoData domain.Data) *errors.ServiceError
-	GetByID(id string, entitytype string) (interface{}, *errors.ServiceError)
+	GetByIDAndBySecondaryID(id string, entitytype string, secondaryId string, secondaryEntitytype string) (interface{}, *errors.ServiceError)
 	GetBySecondaryID(id string, entitytype string) (*[]domain.DynamoDomain, *errors.ServiceError)
-	Delete(id string, entitytype string) *errors.ServiceError
+	Delete(id string, entitytype string, secondaryId string, secondaryEntitytype string) *errors.ServiceError
 }
 
 type repository struct {
@@ -38,8 +38,8 @@ func (repo *repository) Save(dynamoData domain.Data) *errors.ServiceError {
 	return nil
 }
 
-func (repo *repository) GetByID(id string, entitytype string) (interface{}, *errors.ServiceError) {
-	feiraReturn, err := repo.dataClient.GetByID(entitytype + domain.Separator + id)
+func (repo *repository) GetByIDAndBySecondaryID(id string, entitytype string, secondaryId string, secondaryEntitytype string) (interface{}, *errors.ServiceError) {
+	feiraReturn, err := repo.dataClient.GetByIDAndPID(entitytype+domain.Separator+id, secondaryEntitytype+domain.Separator+secondaryId)
 	if err != nil {
 		return nil, errors.InternalServerError("Error get by id", err)
 	}
@@ -65,16 +65,16 @@ func (repo *repository) GetBySecondaryID(id string, entitytype string) (*[]domai
 	return feiraReturn, nil
 }
 
-func (repo *repository) Delete(id string, entitytype string) *errors.ServiceError {
+func (repo *repository) Delete(id string, entitytype string, secondaryId string, secondaryEntitytype string) *errors.ServiceError {
 
-	entity, err := repo.GetByID(id, entitytype)
+	entity, err := repo.GetByIDAndBySecondaryID(id, entitytype, secondaryId, secondaryEntitytype)
 	if err != nil {
 		return err
 	}
 
 	if entity != nil {
-		if err := repo.Delete(id, entitytype); err != nil {
-			return err
+		if err := repo.dataClient.DeleteByIDAndPID(entitytype+domain.Separator+id, secondaryEntitytype+domain.Separator+secondaryId); err != nil {
+			return errors.InternalServerError("Error delete by id and PID", err)
 		}
 	} else {
 		return errors.NotFoundError()

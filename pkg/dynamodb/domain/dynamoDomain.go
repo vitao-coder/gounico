@@ -9,8 +9,8 @@ const Separator = "#"
 
 type DynamoDomain struct {
 	PartitionID   string `dynamo:"PID,hash" index:"Seq-ID-index,range"`
-	ID            string `dynamo:"ID,range"`
-	PrimaryID     string `dynamo:"PRID" localIndex:"ID-Seq-index,range" index:"Seq-ID-index,hash"`
+	PrimaryID     string `dynamo:"ID,range"`
+	ID            string `dynamo:"PRID" localIndex:"ID-Seq-index,range" index:"Seq-ID-index,hash"`
 	PrimaryType   string
 	PartitionType string
 	Data          interface{}

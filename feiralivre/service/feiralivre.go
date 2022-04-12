@@ -45,18 +45,9 @@ func (f *feiraLivre) SaveFeira(ctx context.Context, request *domain.FeiraRequest
 	return nil
 }
 
-func (f *feiraLivre) ExcluirFeira(ctx context.Context, feiraID string) *errors.ServiceError {
+func (f *feiraLivre) ExcluirFeira(ctx context.Context, feiraID string, distritoID string) *errors.ServiceError {
 
-	feira, err := f.repository.GetByID(feiraID, constants.PrimaryType)
-
-	if err != nil {
-		return err
-	}
-	if feira == nil {
-		return errors.NotFoundError()
-	}
-
-	if err := f.repository.Delete(feiraID, constants.PrimaryType); err != nil {
+	if err := f.repository.Delete(feiraID, constants.PrimaryType, distritoID, constants.SecondaryType); err != nil {
 		return err
 	}
 

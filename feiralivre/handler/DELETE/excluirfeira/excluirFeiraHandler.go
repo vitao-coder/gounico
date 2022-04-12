@@ -23,14 +23,14 @@ func (h ExcluirFeiraHandler) HttpMethod() string {
 }
 
 func (h ExcluirFeiraHandler) HttpPath() string {
-	return "/excluirfeira/{id}"
+	return "/excluirfeira/distrito/{iddistrito}/feira/{id}"
 }
 
 func (h ExcluirFeiraHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	param := chi.URLParam(r, "id")
+	idDistrito := chi.URLParam(r, "iddistrito")
+	id := chi.URLParam(r, "id")
 
-	apiError := h.feiraLivreService.ExcluirFeira(r.Context(), param)
-
+	apiError := h.feiraLivreService.ExcluirFeira(r.Context(), id, idDistrito)
 	if apiError != nil {
 		render.RenderApiError(w, *apiError)
 		return
