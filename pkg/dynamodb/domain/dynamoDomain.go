@@ -8,20 +8,20 @@ type Data interface {
 const Separator = "#"
 
 type DynamoDomain struct {
-	PartitionID   string `dynamo:"PID,hash" index:"Seq-ID-index,range"`
-	PrimaryID     string `dynamo:"ID,range"`
-	ID            string `dynamo:"PRID" localIndex:"ID-Seq-index,range" index:"Seq-ID-index,hash"`
-	PrimaryType   string
+	PartitionKey  string `dynamo:"PID,hash" index:"Seq-UID-index,range"`
+	SortKey       string `dynamo:"ID,range"`
+	UID           string `dynamo:"UID" localIndex:"UID-Seq-index,range" index:"Seq-UID-index,hash"`
+	SortType      string
 	PartitionType string
 	Data          interface{}
 }
 
 func NewDomainIndexes(id string, idType string, partitionID string, partitionIDType string) *DynamoDomain {
 	return &DynamoDomain{
-		ID:            partitionIDType + Separator + partitionID + idType + Separator + id,
-		PrimaryID:     idType + Separator + id,
-		PrimaryType:   idType,
-		PartitionID:   partitionIDType + Separator + partitionID,
+		UID:           partitionIDType + Separator + partitionID + idType + Separator + id,
+		SortKey:       idType + Separator + id,
+		SortType:      idType,
+		PartitionKey:  partitionIDType + Separator + partitionID,
 		PartitionType: partitionIDType,
 	}
 }

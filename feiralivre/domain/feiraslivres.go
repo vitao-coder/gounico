@@ -3,7 +3,7 @@ package domain
 import "strconv"
 
 type FeirasLivresCSV struct {
-	Id         string `csv:"ID"`
+	Id         string `csv:"UID"`
 	Longitude  string `csv:"LONG"`
 	Latitude   string `csv:"LAT"`
 	SetCens    string `csv:"SETCENS"`

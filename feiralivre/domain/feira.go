@@ -21,7 +21,7 @@ type Feira struct {
 }
 
 func (f *Feira) IsDataValid() error {
-	if f.indexes.ID == "" || f.indexes.PartitionID == "" || f.indexes.PrimaryType == "" || f.indexes.PartitionType == "" {
+	if f.indexes.UID == "" || f.indexes.PartitionKey == "" || f.indexes.SortType == "" || f.indexes.PartitionType == "" {
 		return errors.New("index data not informed")
 	}
 	return nil
