@@ -35,5 +35,5 @@ func (h ExcluirFeiraHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		render.RenderApiError(w, *apiError)
 		return
 	}
-	render.RenderSuccess(w, http.StatusNoContent, nil)
+	render.RenderStatusCode(w, http.StatusNoContent)
 }

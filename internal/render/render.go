@@ -31,3 +31,7 @@ func RenderApiError(w http.ResponseWriter, error errors.ServiceError) {
 func RenderSuccess(w http.ResponseWriter, httpStatusCode int, objectReturn interface{}) {
 	renderApiResponse(w, objectReturn, httpStatusCode)
 }
+
+func RenderStatusCode(w http.ResponseWriter, httpStatusCode int) {
+	w.WriteHeader(httpStatusCode)
+}
