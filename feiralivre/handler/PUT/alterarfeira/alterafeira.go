@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"gounico/feiralivre"
 	"gounico/feiralivre/domain"
-	"gounico/internal/render"
+	"gounico/pkg/render"
 	"io/ioutil"
 	"net/http"
 )

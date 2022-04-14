@@ -3,7 +3,7 @@ package internal
 import (
 	"context"
 	"gounico/internal/repository"
-	"gounico/pkg/dynamodb"
+	"gounico/pkg/database/dynamodb"
 	"gounico/pkg/logging"
 
 	"go.uber.org/fx"

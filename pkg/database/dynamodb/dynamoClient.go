@@ -1,6 +1,8 @@
 package dynamodb
 
-import "gounico/pkg/dynamodb/domain"
+import (
+	"gounico/pkg/database/dynamodb/domain"
+)
 
 type DynamoClient interface {
 	PutBatch(batchArray []interface{}) error

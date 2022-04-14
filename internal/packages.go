@@ -2,8 +2,8 @@ package internal
 
 import (
 	"gounico/config"
-	"gounico/pkg/dynamodb"
-	"gounico/pkg/dynamodb/client"
+	"gounico/pkg/database/dynamodb"
+	"gounico/pkg/database/dynamodb/client"
 	"gounico/pkg/logging"
 	"gounico/pkg/logging/zap"
 

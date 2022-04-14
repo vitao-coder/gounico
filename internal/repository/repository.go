@@ -1,8 +1,8 @@
 package repository
 
 import (
-	client "gounico/pkg/dynamodb"
-	"gounico/pkg/dynamodb/domain"
+	client "gounico/pkg/database/dynamodb"
+	"gounico/pkg/database/dynamodb/domain"
 	"gounico/pkg/errors"
 )
 

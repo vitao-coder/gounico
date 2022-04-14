@@ -4,6 +4,10 @@ server:
   host: "localhost"
   port: 8008
   logpath: "../gounico/logs/gounico.log"
+worker:
+  environment: "development"
+  host: "localhost"
+  port: 8009
 database:
   table: "feiras"
   region: "us-east-1"

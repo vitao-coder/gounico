@@ -1,9 +1,13 @@
 # Server configurations
 server:
-  environment: "development"
+  environment: "docker"
   host: "host.docker.internal"
   port: 8008
   logpath: "../gounico/logs/gounico.log"
+worker:
+  environment: "docker"
+  host: "host.docker.internal"
+  port: 8009
 database:
   table: "feiras"
   region: "us-east-1"

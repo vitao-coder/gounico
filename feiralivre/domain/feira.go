@@ -2,7 +2,7 @@ package domain
 
 import (
 	"errors"
-	"gounico/pkg/dynamodb/domain"
+	"gounico/pkg/database/dynamodb/domain"
 )
 
 type Feira struct {

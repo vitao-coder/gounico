@@ -27,6 +27,25 @@ type HTTPEndpoint interface {
 	HttpPath() string
 }
 
+type HTTPConsumer interface {
+	http.Handler
+	HttpMethod() string
+	HttpPath() string
+}
+
+type MuxRouter struct {
+	*chi.Mux
+}
+
+type MuxListener struct {
+	*chi.Mux
+}
+
+type Listener struct {
+	Consumers []HTTPConsumer `group:"consumers"`
+	fx.In
+}
+
 type Router struct {
 	Endpoints []HTTPEndpoint `group:"endpoints"`
 	fx.In
@@ -49,7 +68,7 @@ func NewConfig() config.Configuration {
 	return cfg
 }
 
-func NewServer(logger logging.Logger, endpointsRouter Router) *chi.Mux {
+func NewServer(logger logging.Logger, endpointsRouter Router) *MuxRouter {
 	logger.Info(context.Background(), "Starting registering endpoints in server...", nil)
 	r := chi.NewRouter()
 
@@ -67,10 +86,31 @@ func NewServer(logger logging.Logger, endpointsRouter Router) *chi.Mux {
 	}
 
 	logger.Info(context.Background(), "Server endpoints registered...", nil)
-	return r
+	return &MuxRouter{r}
 }
 
-func StartServer(lc fx.Lifecycle, logger logging.Logger, server *chi.Mux, config config.Configuration) {
+func NewListener(logger logging.Logger, endpointsListeners Listener) *MuxListener {
+	logger.Info(context.Background(), "Starting registering consumers endpoints in server...", nil)
+	r := chi.NewRouter()
+
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.Timeout(timeout * time.Second))
+	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("pong"))
+	})
+
+	for _, endpoint := range endpointsListeners.Consumers {
+		r.Method(endpoint.HttpMethod(), endpoint.HttpPath(), endpoint)
+		logger.Info(context.Background(), fmt.Sprintf("Consumer: %s - Pattern: %s - Registered.", endpoint.HttpMethod(), endpoint.HttpPath()), nil)
+	}
+
+	logger.Info(context.Background(), "Consumer endpoints registered...", nil)
+	return &MuxListener{r}
+}
+
+func StartServer(lc fx.Lifecycle, logger logging.Logger, server *MuxRouter, config config.Configuration) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			logger.Info(ctx, "Start server", nil)
@@ -84,10 +124,25 @@ func StartServer(lc fx.Lifecycle, logger logging.Logger, server *chi.Mux, config
 	})
 }
 
+func StartListener(lc fx.Lifecycle, logger logging.Logger, listener *MuxListener, config config.Configuration) {
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			logger.Info(ctx, "Start listener", nil)
+			go http.ListenAndServe(":"+config.Worker.Port, listener)
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			logger.Info(ctx, "Stop listener", nil)
+			return nil
+		},
+	})
+}
+
 func ListenAndServe() {
 	ServerModule := fx.Provide(
 		NewConfig,
 		NewServer,
+		NewListener,
 	)
 	app := fx.New(fx.Options(
 		PackagesModule,
@@ -95,6 +150,6 @@ func ListenAndServe() {
 		RepositoryModule,
 		ServicesModule,
 		HandlersModule,
-	), fx.Invoke(StartServer))
+	), fx.Invoke(StartServer, StartListener))
 	app.Run()
 }
