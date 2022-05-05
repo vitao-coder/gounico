@@ -2,12 +2,12 @@ package feiralivre
 
 import (
 	"context"
-	"gounico/feiralivre/domain"
-	"gounico/pkg/errors"
+	"gounico/feiralivre/domains"
+	"gounico/infrastructure/errors"
 )
 
 type FeiraLivre interface {
-	SaveFeira(ctx context.Context, request *domain.FeiraRequest) *errors.ServiceError
+	SaveFeira(ctx context.Context, request *domains.FeiraRequest) *errors.ServiceError
 	ExcluirFeira(ctx context.Context, feiraID string, distritoID string) *errors.ServiceError
-	BuscarFeiraPorDistrito(ctx context.Context, distritoID string) ([]domain.Feira, *errors.ServiceError)
+	BuscarFeiraPorDistrito(ctx context.Context, distritoID string) ([]domains.Feira, *errors.ServiceError)
 }

@@ -29,4 +29,6 @@ RUN cp /build/main .
 
 EXPOSE 8008
 
+EXPOSE 8009
+
 CMD ["/dist/main"]

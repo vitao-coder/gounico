@@ -4,7 +4,7 @@ server:
   host: "localhost"
   port: 8008
   logpath: "../gounico/logs/gounico.log"
-worker:
+listener:
   environment: "development"
   host: "localhost"
   port: 8009
@@ -15,3 +15,12 @@ database:
   secretAccessKey: "dummy"
   sessionToken: "dummy"
   endpointURL: "http://127.0.0.1:8000"
+messaging:
+  brokerURL: "pulsar://localhost:6650"
+  operationTimeout: 30
+  connectionTimeout: 30
+  channelConsumerLimit: 2
+  configurations: [
+    { topic: "feiraLivre", subscriber: "feiraListener", consumer: "urlFeira" },
+    { topic: "regioes", subscriber: "regioesListener", consumer: "urlRegioes" }
+  ]

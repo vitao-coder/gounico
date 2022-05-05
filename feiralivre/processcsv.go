@@ -2,7 +2,7 @@ package feiralivre
 
 import (
 	"context"
-	"gounico/pkg/errors"
+	"gounico/infrastructure/errors"
 )
 
 type ProcessCSV interface {

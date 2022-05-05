@@ -1,9 +1,10 @@
 package config
 
 type Configuration struct {
-	Server   Server   `yaml:"server"`
-	Worker   Worker   `yaml:"worker"`
-	Database Database `yaml:"database"`
+	Server    Server    `yaml:"server"`
+	Worker    Listener  `yaml:"listener"`
+	Database  Database  `yaml:"database"`
+	Messaging Messaging `yaml:"messaging"`
 }
 
 type Database struct {
@@ -22,8 +23,20 @@ type Server struct {
 	LogPath     string `yaml:"logpath"`
 }
 
-type Worker struct {
+type Listener struct {
 	Environment string `yaml:"environment"`
 	Port        string `yaml:"port"`
 	Host        string `yaml:"host"`
+}
+
+type Messaging struct {
+	BrokerURL      string                    `yaml:"brokerURL"`
+	ConsumerLimit  int                       `yaml:"channelConsumerLimit"`
+	Configurations []MessagingConfigurations `yaml:"configurations"`
+}
+
+type MessagingConfigurations struct {
+	Topic      string `yaml:"topic"`
+	Subscriber string `yaml:"subscriber"`
+	URL        string `yaml:"url"`
 }
