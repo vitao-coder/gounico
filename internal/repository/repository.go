@@ -1,9 +1,9 @@
 package repository
 
 import (
-	client "gounico/infrastructure/database/dynamodb"
-	"gounico/infrastructure/database/dynamodb/domain"
-	"gounico/infrastructure/errors"
+	client "gounico/pkg/database/dynamodb"
+	"gounico/pkg/database/dynamodb/domain"
+	"gounico/pkg/errors"
 )
 
 type Repository interface {

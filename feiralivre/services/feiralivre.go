@@ -2,11 +2,11 @@ package services
 
 import (
 	"context"
-	internalRepo "gounico/application/repository"
 	"gounico/constants"
 	"gounico/feiralivre/domains"
 	"gounico/feiralivre/domains/builders"
-	"gounico/infrastructure/errors"
+	internalRepo "gounico/internal/repository"
+	"gounico/pkg/errors"
 	"strings"
 
 	"github.com/mitchellh/mapstructure"

@@ -2,12 +2,12 @@ package render
 
 import (
 	"encoding/json"
-	"gounico/infrastructure/errors"
+	"gounico/pkg/errors"
 	"net/http"
 )
 
 func renderApiResponse(w http.ResponseWriter, renderObject interface{}, httpStatusCode int) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "internal/json")
 	w.WriteHeader(httpStatusCode)
 	err := json.NewEncoder(w).Encode(renderObject)
 	if err != nil {

@@ -2,11 +2,11 @@ package services
 
 import (
 	"context"
-	"gounico/application/repository"
 	"gounico/constants"
 	domainFeira "gounico/feiralivre/domains"
 	"gounico/feiralivre/domains/builders"
-	"gounico/infrastructure/errors"
+	"gounico/internal/repository"
+	"gounico/pkg/errors"
 	"strings"
 
 	"github.com/gocarina/gocsv"

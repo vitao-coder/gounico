@@ -1,7 +1,7 @@
 package client
 
 import (
-	"gounico/infrastructure/database/dynamodb/domain"
+	"gounico/pkg/database/dynamodb/domain"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
 

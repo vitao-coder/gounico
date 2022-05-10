@@ -1,13 +1,13 @@
-package application
+package internal
 
 import (
 	"gounico/config"
-	"gounico/infrastructure/database/dynamodb"
-	"gounico/infrastructure/database/dynamodb/client"
-	"gounico/infrastructure/logging"
-	"gounico/infrastructure/logging/zap"
-	"gounico/infrastructure/messaging/pulsar"
-	clientPulsar "gounico/infrastructure/messaging/pulsar/client"
+	"gounico/pkg/database/dynamodb"
+	"gounico/pkg/database/dynamodb/client"
+	"gounico/pkg/logging"
+	"gounico/pkg/logging/zap"
+	"gounico/pkg/messaging/pulsar"
+	clientPulsar "gounico/pkg/messaging/pulsar/client"
 
 	"go.uber.org/fx"
 )

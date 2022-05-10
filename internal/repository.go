@@ -1,10 +1,10 @@
-package application
+package internal
 
 import (
 	"context"
-	"gounico/application/repository"
-	"gounico/infrastructure/database/dynamodb"
-	"gounico/infrastructure/logging"
+	"gounico/internal/repository"
+	"gounico/pkg/database/dynamodb"
+	"gounico/pkg/logging"
 
 	"go.uber.org/fx"
 )

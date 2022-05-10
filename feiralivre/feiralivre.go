@@ -3,7 +3,7 @@ package feiralivre
 import (
 	"context"
 	"gounico/feiralivre/domains"
-	"gounico/infrastructure/errors"
+	"gounico/pkg/errors"
 )
 
 type FeiraLivre interface {

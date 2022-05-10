@@ -1,10 +1,10 @@
-package application
+package internal
 
 import (
 	"context"
 	"fmt"
 	"gounico/config"
-	"gounico/infrastructure/logging"
+	"gounico/pkg/logging"
 	"net/http"
 	"os"
 	"path/filepath"

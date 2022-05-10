@@ -3,7 +3,7 @@ package workerPool
 import (
 	"context"
 	"fmt"
-	"gounico/application/worker/domain"
+	"gounico/internal/worker/domain"
 	"sync"
 )
 
@@ -53,7 +53,6 @@ func (wp *WorkerPool) Run(ctx context.Context) {
 	}
 
 	wg.Wait()
-	close(wp.Done)
 	close(wp.results)
 }
 

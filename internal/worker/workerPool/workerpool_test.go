@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"gounico/application/worker/domain"
+	"gounico/internal/worker/domain"
 	"gounico/utils"
 	"testing"
 	"time"
@@ -38,13 +38,13 @@ func TestWorkerPoolInfinitely(t *testing.T) {
 			}
 			contVolume++
 			if contVolume >= jobVolume {
-				t.Logf("Worker pool worked successful...")
+				t.Logf("Worker pool executed successful...")
+				close(workerTest.jobs)
+				close(workerTest.results)
+				close(workerTest.Done)
 				ctx.Done()
-				return
 			}
 		case <-workerTest.Done:
-			close(workerTest.jobs)
-			close(workerTest.results)
 			return
 		default:
 		}
@@ -69,28 +69,26 @@ func TestCancelWorkerPool(t *testing.T) {
 	go workerTest.AddJobs(job1, job2, job3, job4, job5, job6)
 	go workerTest.Run(ctx)
 
-	go func() {
-		for {
-			select {
-			case r, ok := <-workerTest.Results():
-				if !ok {
-					continue
-				}
-				t.Log(r.Result)
-				t.Log(r.WorkerJobDescriptor)
-				if r.Error != nil {
-					t.Log(r.Error.Error())
-				}
-
-			case <-workerTest.Done:
-				return
-			default:
+	for {
+		select {
+		case r, ok := <-workerTest.Results():
+			if !ok {
+				continue
 			}
-		}
-	}()
-	time.Sleep(2 * time.Second)
+			t.Log(r.Result)
+			t.Log(r.WorkerJobDescriptor)
+			if r.Error != nil {
+				cancel()
+				t.Log(r.Error.Error())
+				return
+			}
 
-	cancel()
+		case <-workerTest.Done:
+			return
+		default:
+		}
+	}
+
 }
 
 func addALotOfJobs(wp *WorkerPool, jobVolume int) {

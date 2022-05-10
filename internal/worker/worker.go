@@ -2,7 +2,7 @@ package worker
 
 import (
 	"context"
-	"gounico/application/worker/domain"
+	"gounico/internal/worker/domain"
 )
 
 type Worker interface {

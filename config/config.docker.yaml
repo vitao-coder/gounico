@@ -1,12 +1,12 @@
 # Server configurations
 server:
   environment: "docker"
-  host: "host.docker.application"
+  host: "host.docker.internal"
   port: 8008
   logpath: "../gounico/logs/gounico.log"
 listener:
   environment: "docker"
-  host: "host.docker.application"
+  host: "host.docker.internal"
   port: 8009
 database:
   table: "feiras"

@@ -2,7 +2,7 @@ package excluirfeira
 
 import (
 	"gounico/feiralivre"
-	"gounico/infrastructure/render"
+	"gounico/pkg/render"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"

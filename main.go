@@ -1,7 +1,7 @@
 package main
 
-import "gounico/application"
+import "gounico/internal"
 
 func main() {
-	application.ListenAndServe()
+	internal.ListenAndServe()
 }

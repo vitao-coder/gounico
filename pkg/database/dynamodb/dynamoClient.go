@@ -1,7 +1,7 @@
 package dynamodb
 
 import (
-	"gounico/infrastructure/database/dynamodb/domain"
+	"gounico/pkg/database/dynamodb/domain"
 )
 
 type DynamoClient interface {

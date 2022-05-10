@@ -1,9 +1,9 @@
-package application
+package internal
 
 import (
-	"gounico/application/repository"
 	"gounico/feiralivre"
 	feiraliv "gounico/feiralivre/services"
+	"gounico/internal/repository"
 
 	"go.uber.org/fx"
 )
