@@ -8,11 +8,7 @@ import (
 	"strings"
 )
 
-type Client struct {
-	cl *http.Client
-}
-
-func (c *Client) Get(ctx context.Context, client *http.Client, url string) (*http.Response, error) {
+func Get(ctx context.Context, client *http.Client, url string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -20,7 +16,7 @@ func (c *Client) Get(ctx context.Context, client *http.Client, url string) (*htt
 	return do(ctx, client, req)
 }
 
-func (c *Client) Post(ctx context.Context, client *http.Client, url string, bodyType string, body io.Reader) (*http.Response, error) {
+func Post(ctx context.Context, client *http.Client, url string, bodyType string, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
 		return nil, err
@@ -29,7 +25,7 @@ func (c *Client) Post(ctx context.Context, client *http.Client, url string, body
 	return do(ctx, client, req)
 }
 
-func (c *Client) PostForm(ctx context.Context, client *http.Client, url string, data url.Values) (*http.Response, error) {
+func PostForm(ctx context.Context, client *http.Client, url string, data url.Values) (*http.Response, error) {
 	return c.Post(ctx, client, url, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
 }
 
