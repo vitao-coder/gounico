@@ -1,6 +1,8 @@
-package worker
+package domain
 
-import "context"
+import (
+	"context"
+)
 
 type JobFunction func(ctx context.Context, params ...interface{}) (interface{}, error)
 
@@ -24,7 +26,7 @@ func NewWorkerJob(workerJobDescriptor string, jobFunc JobFunction, params ...int
 	}
 }
 
-func (wj WorkerJob) executeJob(ctx context.Context) WorkerJobResult {
+func (wj WorkerJob) ExecuteJob(ctx context.Context) WorkerJobResult {
 	result, err := wj.Job(ctx, wj.Params)
 
 	if err != nil {
