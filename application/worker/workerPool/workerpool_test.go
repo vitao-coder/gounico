@@ -12,7 +12,7 @@ import (
 
 func TestWorkerPoolInfinitely(t *testing.T) {
 	defer utils.TimeTrack(time.Now(), "TestWorkerPoolInfinitely")
-	ctx, cancel := context.WithCancel(context.TODO())
+	ctx, _ := context.WithTimeout(context.TODO(), 3*time.Second)
 
 	maxWorkers := 200
 	jobVolume := 20000
@@ -40,13 +40,11 @@ func TestWorkerPoolInfinitely(t *testing.T) {
 			if contVolume >= jobVolume {
 				t.Logf("Worker pool worked successful...")
 				ctx.Done()
-				cancel()
 				return
 			}
 		case <-workerTest.Done:
 			close(workerTest.jobs)
 			close(workerTest.results)
-			cancel()
 			return
 		default:
 		}
