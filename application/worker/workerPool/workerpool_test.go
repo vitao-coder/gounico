@@ -6,22 +6,24 @@ import (
 	"fmt"
 	"gounico/application/worker/domain"
 	"gounico/utils"
-	"math/rand"
 	"testing"
 	"time"
 )
 
 func TestWorkerPoolInfinitely(t *testing.T) {
 	defer utils.TimeTrack(time.Now(), "TestWorkerPoolInfinitely")
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.TODO())
 
-	maxWorkers := 10000
+	maxWorkers := 200
+	jobVolume := 20000
 
 	workerTest := NewWorkerPool(maxWorkers)
 
 	go workerTest.Run(ctx)
 
-	go addALotOfJobs(workerTest, 100000)
+	go addALotOfJobs(workerTest, jobVolume)
+
+	contVolume := 0
 
 	for {
 		select {
@@ -34,13 +36,21 @@ func TestWorkerPoolInfinitely(t *testing.T) {
 			if r.Error != nil {
 				t.Log(r.Error.Error())
 			}
+			contVolume++
+			if contVolume >= jobVolume {
+				t.Logf("Worker pool worked successful...")
+				ctx.Done()
+				cancel()
+				return
+			}
 		case <-workerTest.Done:
 			close(workerTest.jobs)
+			close(workerTest.results)
+			cancel()
 			return
 		default:
 		}
 	}
-
 }
 
 func TestCancelWorkerPool(t *testing.T) {
@@ -107,12 +117,10 @@ func jobError(name string) domain.WorkerJob {
 
 var (
 	execTestFunction = func(ctx context.Context, params ...interface{}) (interface{}, error) {
-		time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
 		return params, nil
 	}
 
 	execTestFunctionError = func(ctx context.Context, params ...interface{}) (interface{}, error) {
-		time.Sleep(time.Duration(rand.Intn(3)) * time.Second)
 		return nil, errDefault
 	}
 
