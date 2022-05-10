@@ -26,7 +26,7 @@ func Post(ctx context.Context, client *http.Client, url string, bodyType string,
 }
 
 func PostForm(ctx context.Context, client *http.Client, url string, data url.Values) (*http.Response, error) {
-	return c.Post(ctx, client, url, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
+	return Post(ctx, client, url, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
 }
 
 func do(ctx context.Context, client *http.Client, req *http.Request) (*http.Response, error) {
