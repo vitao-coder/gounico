@@ -18,7 +18,7 @@ database:
 messaging:
   brokerURL: "pulsar://localhost:6650"
   workerPoolLimit: 100
-  channelConsumerLimit: 100
+  channelConsumerLimit: 500
   configurations: [
     { topic: "feiraLivre", subscriber: "feiraSub", url: "http://host.docker.internal:8009/consumers/novafeira" },
   ]
