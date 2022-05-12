@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-type JobFunction func(ctx context.Context, params ...interface{}) (interface{}, error)
+type JobFunction func(ctx context.Context, params []interface{}) (interface{}, error)
 
 type WorkerJobResult struct {
 	Result              interface{}

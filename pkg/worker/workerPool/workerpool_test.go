@@ -40,9 +40,7 @@ func TestWorkerPoolInfinitely(t *testing.T) {
 			if contVolume >= jobVolume {
 				t.Logf("Worker pool executed successful...")
 				close(workerTest.jobs)
-				close(workerTest.results)
 				close(workerTest.Done)
-				ctx.Done()
 			}
 		case <-workerTest.Done:
 			return
@@ -102,21 +100,21 @@ func job(name string) worker.WorkerJob {
 	var paramsTest []interface{}
 	paramsTest = append(paramsTest, "paramA")
 	paramsTest = append(paramsTest, "paramB")
-	return worker.NewWorkerJob(name, execTestFunction, paramsTest)
+	return worker.NewWorkerJob(name, execTestFunction, paramsTest...)
 }
 
 func jobError(name string) worker.WorkerJob {
 	var paramsTest []interface{}
 	paramsTest = append(paramsTest, "paramD")
-	return worker.NewWorkerJob(name, execTestFunctionError, paramsTest)
+	return worker.NewWorkerJob(name, execTestFunctionError, paramsTest...)
 }
 
 var (
-	execTestFunction = func(ctx context.Context, params ...interface{}) (interface{}, error) {
+	execTestFunction = func(ctx context.Context, params []interface{}) (interface{}, error) {
 		return params, nil
 	}
 
-	execTestFunctionError = func(ctx context.Context, params ...interface{}) (interface{}, error) {
+	execTestFunctionError = func(ctx context.Context, params []interface{}) (interface{}, error) {
 		return nil, errDefault
 	}
 

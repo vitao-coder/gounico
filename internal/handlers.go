@@ -7,6 +7,8 @@ import (
 	"gounico/feiralivre/handlers/POST/novafeira"
 	"gounico/feiralivre/handlers/POST/processcsv"
 	"gounico/feiralivre/handlers/PUT/alterarfeira"
+	"gounico/pkg/logging"
+	"gounico/pkg/messaging/pulsar"
 
 	"go.uber.org/fx"
 )
@@ -17,6 +19,7 @@ var HandlersModule = fx.Provide(
 	NewExcluirFeiraHandler,
 	NewNovaFeiraHandler,
 	NewAlterarFeiraHandler,
+	NewNovaFeiraPublisher,
 )
 
 type HandlerOutput struct {
@@ -47,6 +50,13 @@ func NewExcluirFeiraHandler(service feiralivre.FeiraLivre) HandlerOutput {
 
 func NewNovaFeiraHandler(service feiralivre.FeiraLivre) HandlerOutput {
 	handlerEndpoint := novafeira.NewNovaFeiraHandler(service)
+	return HandlerOutput{
+		Endpoint: handlerEndpoint,
+	}
+}
+
+func NewNovaFeiraPublisher(pulsar pulsar.PulsarClient, logger logging.Logger) HandlerOutput {
+	handlerEndpoint := novafeira.NovaFeiraPublisher(pulsar, logger)
 	return HandlerOutput{
 		Endpoint: handlerEndpoint,
 	}

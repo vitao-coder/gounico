@@ -34,10 +34,6 @@ type HTTPConsumer interface {
 	HttpPath() string
 }
 
-type POSTListener interface {
-	listener.PostListener
-}
-
 type MuxRouter struct {
 	*chi.Mux
 }
@@ -129,15 +125,18 @@ func StartServer(lc fx.Lifecycle, logger logging.Logger, server *MuxRouter, conf
 	})
 }
 
-func StartListener(lc fx.Lifecycle, logger logging.Logger, listener *MuxConsumer, config config.Configuration) {
+func StartListener(lc fx.Lifecycle, logger logging.Logger, listenerConsumers *MuxConsumer, config config.Configuration, listenerService listener.Listener) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			logger.Info(ctx, "Start listener", nil)
-			go http.ListenAndServe(":"+config.Worker.Port, listener)
+			logger.Info(ctx, "Start listener / consumers", nil)
+			go http.ListenAndServe(":"+config.Worker.Port, listenerConsumers)
+			go listenerService.RunListenerService()
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			logger.Info(ctx, "Stop listener", nil)
+			logger.Info(ctx, "Stop listener / consumers", nil)
+			listenerService.StopService()
+			ctx.Done()
 			return nil
 		},
 	})
@@ -155,6 +154,7 @@ func ListenAndServe() {
 		RepositoryModule,
 		ServicesModule,
 		ConsumersModule,
+		ListenersModule,
 		HandlersModule,
 	), fx.Invoke(StartServer, StartListener))
 	app.Run()

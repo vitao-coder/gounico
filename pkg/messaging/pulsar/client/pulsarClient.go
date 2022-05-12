@@ -8,13 +8,6 @@ import (
 	"github.com/apache/pulsar-client-go/pulsar"
 )
 
-type PulsarClient interface {
-	CreateProducer(topic string) error
-	SendMessage(ctx context.Context, topic string, payload interface{})
-	CreateConsumerWithChannels(topic string, subcriptionName string, channelLimit int) error
-	GetConsumer(topic string, subcriptionName string) (pulsar.Consumer, chan pulsar.ConsumerMessage)
-}
-
 type consumer struct {
 	subscribeName string
 	topicName     string
@@ -22,15 +15,15 @@ type consumer struct {
 	consumer      pulsar.Consumer
 }
 
-type producer struct {
+type Producer struct {
 	topicName string
-	producer  pulsar.Producer
+	Producer  pulsar.Producer
 }
 
 type pulsarClient struct {
 	client    pulsar.Client
-	producers []*producer
-	consumers []*consumer
+	producers []Producer
+	consumers []consumer
 }
 
 func NewPulsarClient(URL string) (*pulsarClient, error) {
@@ -65,28 +58,28 @@ func (pc *pulsarClient) CreateProducer(topic string) error {
 	return nil
 }
 
-func (pc *pulsarClient) existsGetProducer(topic string) (bool, *producer) {
+func (pc *pulsarClient) ExistsGetProducer(topic string) (bool, Producer) {
 	for _, p := range pc.producers {
 		if p.topicName == topic {
 			return true, p
 		}
 	}
-	return false, nil
+	return false, Producer{}
 }
 
 func (pc *pulsarClient) addProducer(topic string, prod pulsar.Producer) {
-	exists, _ := pc.existsGetProducer(topic)
+	exists, _ := pc.ExistsGetProducer(topic)
 	if !exists {
-		internalProducer := &producer{
+		internalProducer := Producer{
 			topicName: topic,
-			producer:  prod,
+			Producer:  prod,
 		}
 		pc.producers = append(pc.producers, internalProducer)
 	}
 }
 
 func (pc *pulsarClient) SendMessage(ctx context.Context, topic string, payload interface{}) error {
-	exists, producerInternal := pc.existsGetProducer(topic)
+	exists, producerInternal := pc.ExistsGetProducer(topic)
 
 	if !exists {
 		return errors.New("producer for this topic not exists")
@@ -98,7 +91,7 @@ func (pc *pulsarClient) SendMessage(ctx context.Context, topic string, payload i
 		return errors.New("error marshal message")
 	}
 
-	_, errSend := producerInternal.producer.Send(ctx, &pulsar.ProducerMessage{
+	_, errSend := producerInternal.Producer.Send(ctx, &pulsar.ProducerMessage{
 		Payload: message,
 	})
 	if errSend != nil {
@@ -109,7 +102,7 @@ func (pc *pulsarClient) SendMessage(ctx context.Context, topic string, payload i
 }
 
 func (pc *pulsarClient) CreateConsumerWithChannels(topic string, subcriptionName string, channelLimit int) error {
-	exists, _ := pc.existsGetProducer(topic)
+	exists, _ := pc.ExistsGetProducer(topic)
 	if !exists {
 		return errors.New("producer topic not found")
 	}
@@ -119,7 +112,7 @@ func (pc *pulsarClient) CreateConsumerWithChannels(topic string, subcriptionName
 	options := pulsar.ConsumerOptions{
 		Topic:            topic,
 		SubscriptionName: subcriptionName,
-		Type:             pulsar.Shared,
+		Type:             pulsar.Exclusive,
 	}
 
 	options.MessageChannel = channel
@@ -153,7 +146,7 @@ func (pc *pulsarClient) GetConsumer(topic string, subcriptionName string) (pulsa
 func (pc *pulsarClient) addConsumer(topic string, subcriptionName string, cons pulsar.Consumer, consumerChannel chan pulsar.ConsumerMessage) {
 	exists := pc.existsConsumer(topic, subcriptionName)
 	if !exists {
-		internalConsumer := &consumer{
+		internalConsumer := consumer{
 			subscribeName: subcriptionName,
 			topicName:     topic,
 			consumerMsg:   consumerChannel,

@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go v1.42.47
 	github.com/go-chi/chi/v5 v5.0.4
 	github.com/gocarina/gocsv v0.0.0-20211203214250-4735fba0c1d9
+	github.com/google/uuid v1.3.0
 	github.com/guregu/dynamo v1.15.0
 	github.com/mitchellh/mapstructure v1.4.3
 	go.uber.org/fx v1.14.2

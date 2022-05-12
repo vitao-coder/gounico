@@ -8,6 +8,8 @@ import (
 	"gounico/pkg/logging/zap"
 	"gounico/pkg/messaging/pulsar"
 	clientPulsar "gounico/pkg/messaging/pulsar/client"
+	"net/http"
+	"time"
 
 	"go.uber.org/fx"
 )
@@ -16,6 +18,7 @@ var PackagesModule = fx.Provide(
 	NewLogger,
 	NewDynamoClient,
 	NewPulsarClient,
+	NewHttpClient,
 )
 
 func NewLogger() (logging.Logger, error) {
@@ -46,12 +49,14 @@ func NewPulsarClient(config config.Configuration) (pulsar.PulsarClient, error) {
 			return nil, errProd
 		}
 
-		errCons := pulsarClient.CreateConsumerWithChannels(configConsumer.Topic, configConsumer.Subscriber, config.Messaging.ConsumerLimit)
-		if errCons != nil {
-			return nil, errCons
-		}
-
 	}
 
 	return pulsarClient, err
+}
+
+func NewHttpClient(config config.Configuration) *http.Client {
+	clientHttp := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+	return clientHttp
 }
