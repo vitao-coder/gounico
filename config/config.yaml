@@ -17,7 +17,7 @@ database:
   endpointURL: "http://127.0.0.1:8000"
 messaging:
   brokerURL: "pulsar://localhost:6650"
-  workerPoolLimit: 100
+  workerPoolLimit: 2
   channelConsumerLimit: 100
   configurations: [
     { topic: "feiraLivre", subscriber: "feiraSub", url: "http://localhost:8009/consumers/novafeira" },

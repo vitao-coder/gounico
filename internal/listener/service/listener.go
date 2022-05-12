@@ -12,6 +12,7 @@ import (
 	"gounico/pkg/logging"
 	pulsar2 "gounico/pkg/messaging/pulsar"
 	"gounico/pkg/worker"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"sync"
@@ -100,11 +101,11 @@ func (l *Listener) runConsumerChannels(ctx context.Context) {
 	for _, listener := range l.postListeners {
 		wg.Add(1)
 		consumer, channel := l.pulsarClient.GetConsumer(listener.Topic(), listener.Subscription())
-		go startConsumingMessages(ctx, listener.Subscription(), l.logger, &wg, channel, consumer, listener.URL(), l.workerService)
+		go startConsumingMessages(ctx, listener.Subscription(), l.logger, &wg, channel, consumer, listener.URL(), l.workerService, l.httpClient)
 	}
 }
 
-func startConsumingMessages(ctx context.Context, consumerName string, logger logging.Logger, wg *sync.WaitGroup, messages <-chan pulsar.ConsumerMessage, consumer pulsar.Consumer, postURL string, workerService worker.Worker) {
+func startConsumingMessages(ctx context.Context, consumerName string, logger logging.Logger, wg *sync.WaitGroup, messages <-chan pulsar.ConsumerMessage, consumer pulsar.Consumer, postURL string, workerService worker.Worker, httpClient *http.Client) {
 	defer wg.Done()
 
 	for {
@@ -116,7 +117,7 @@ func startConsumingMessages(ctx context.Context, consumerName string, logger log
 			msg := chMsg.Message
 			json, _ := json.Marshal(msg.Payload())
 			logger.Debug(ctx, fmt.Sprintf("%s - Received message in consumer. Message: %s", consumerName, msg.Payload()), string(json))
-			workerService.AddJobs(createWorkerJOB(consumerName, postURL, msg, consumer))
+			workerService.AddJobs(createWorkerJOB(consumerName, postURL, msg, consumer, httpClient))
 		case <-ctx.Done():
 			qtdMsgs := len(messages)
 			if qtdMsgs > 0 {
@@ -127,12 +128,8 @@ func startConsumingMessages(ctx context.Context, consumerName string, logger log
 	}
 }
 
-func postFunction(consumer pulsar.Consumer) worker.JobFunction {
+func postFunction(consumer pulsar.Consumer, httpClient *http.Client) worker.JobFunction {
 	var postFunction = func(ctx context.Context, params []interface{}) (interface{}, error) {
-
-		httpClient := &http.Client{
-			Timeout: 30 * time.Second,
-		}
 
 		var insideParams []interface{}
 		insideParams = params[0].([]interface{})
@@ -153,16 +150,19 @@ func postFunction(consumer pulsar.Consumer) worker.JobFunction {
 			return nil, err
 		}
 		consumer.Ack(msg)
-		return result, nil
+		defer result.Body.Close()
+
+		bodyResult, err := ioutil.ReadAll(result.Body)
+		return bodyResult, nil
 	}
 	return postFunction
 }
 
-func createWorkerJOB(name string, urlToPost string, msg pulsar.Message, consumer pulsar.Consumer) worker.WorkerJob {
+func createWorkerJOB(name string, urlToPost string, msg pulsar.Message, consumer pulsar.Consumer, httpClient *http.Client) worker.WorkerJob {
 	var params []interface{}
 	params = append(params, msg)
 	params = append(params, urlToPost)
-	workerJob := worker.NewWorkerJob(name, postFunction(consumer), params)
+	workerJob := worker.NewWorkerJob(name, postFunction(consumer, httpClient), params)
 	return workerJob
 }
 
