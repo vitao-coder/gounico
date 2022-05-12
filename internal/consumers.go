@@ -1,10 +1,22 @@
 package internal
 
-import "go.uber.org/fx"
+import (
+	"gounico/feiralivre"
+	"gounico/feiralivre/handlers/POST/novafeira"
 
-var ConsumersModule = fx.Provide()
+	"go.uber.org/fx"
+)
+
+var ConsumersModule = fx.Provide(NewNovaFeiraConsumer)
 
 type ConsumerOutput struct {
 	fx.Out
-	Consumer HTTPEndpoint `group:"consumers"`
+	Consumer HTTPConsumer `group:"consumers"`
+}
+
+func NewNovaFeiraConsumer(service feiralivre.FeiraLivre) ConsumerOutput {
+	consumerEndpoint := novafeira.NewNovaFeiraConsumer(service)
+	return ConsumerOutput{
+		Consumer: consumerEndpoint,
+	}
 }

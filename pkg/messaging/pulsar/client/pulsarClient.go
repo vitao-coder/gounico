@@ -11,7 +11,7 @@ import (
 type PulsarClient interface {
 	CreateProducer(topic string) error
 	SendMessage(ctx context.Context, topic string, payload interface{})
-	CreateConsumerWithChannels(topic string, subcriptionName string, channelLimit int)
+	CreateConsumerWithChannels(topic string, subcriptionName string, channelLimit int) error
 	GetConsumer(topic string, subcriptionName string) (pulsar.Consumer, chan pulsar.ConsumerMessage)
 }
 
@@ -130,7 +130,6 @@ func (pc *pulsarClient) CreateConsumerWithChannels(topic string, subcriptionName
 
 	pc.addConsumer(topic, subcriptionName, cons, channel)
 	return nil
-
 }
 
 func (pc *pulsarClient) existsConsumer(topic string, subcriptionName string) bool {

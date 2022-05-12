@@ -1,4 +1,4 @@
-package domain
+package worker
 
 import (
 	"context"

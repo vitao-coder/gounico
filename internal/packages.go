@@ -18,8 +18,8 @@ var PackagesModule = fx.Provide(
 	NewPulsarClient,
 )
 
-func NewLogger(config config.Configuration) (logging.Logger, error) {
-	logger, err := zap.NewZapLogger(config.Server.LogPath)
+func NewLogger() (logging.Logger, error) {
+	logger, err := zap.NewZapLogger()
 	return logger, err
 }
 

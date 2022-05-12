@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gounico/config"
+	"gounico/internal/listener"
 	"gounico/pkg/logging"
 	"net/http"
 	"os"
@@ -33,15 +34,19 @@ type HTTPConsumer interface {
 	HttpPath() string
 }
 
+type POSTListener interface {
+	listener.PostListener
+}
+
 type MuxRouter struct {
 	*chi.Mux
 }
 
-type MuxListener struct {
+type MuxConsumer struct {
 	*chi.Mux
 }
 
-type Listener struct {
+type Consumer struct {
 	Consumers []HTTPConsumer `group:"consumers"`
 	fx.In
 }
@@ -89,7 +94,7 @@ func NewServer(logger logging.Logger, endpointsRouter Router) *MuxRouter {
 	return &MuxRouter{r}
 }
 
-func NewListener(logger logging.Logger, endpointsListeners Listener) *MuxListener {
+func NewConsumer(logger logging.Logger, endpointsConsumers Consumer) *MuxConsumer {
 	logger.Info(context.Background(), "Starting registering consumers endpoints in server...", nil)
 	r := chi.NewRouter()
 
@@ -101,13 +106,13 @@ func NewListener(logger logging.Logger, endpointsListeners Listener) *MuxListene
 		w.Write([]byte("pong"))
 	})
 
-	for _, endpoint := range endpointsListeners.Consumers {
+	for _, endpoint := range endpointsConsumers.Consumers {
 		r.Method(endpoint.HttpMethod(), endpoint.HttpPath(), endpoint)
 		logger.Info(context.Background(), fmt.Sprintf("Consumer: %s - Pattern: %s - Registered.", endpoint.HttpMethod(), endpoint.HttpPath()), nil)
 	}
 
 	logger.Info(context.Background(), "Consumer endpoints registered...", nil)
-	return &MuxListener{r}
+	return &MuxConsumer{r}
 }
 
 func StartServer(lc fx.Lifecycle, logger logging.Logger, server *MuxRouter, config config.Configuration) {
@@ -124,7 +129,7 @@ func StartServer(lc fx.Lifecycle, logger logging.Logger, server *MuxRouter, conf
 	})
 }
 
-func StartListener(lc fx.Lifecycle, logger logging.Logger, listener *MuxListener, config config.Configuration) {
+func StartListener(lc fx.Lifecycle, logger logging.Logger, listener *MuxConsumer, config config.Configuration) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			logger.Info(ctx, "Start listener", nil)
@@ -142,13 +147,14 @@ func ListenAndServe() {
 	ServerModule := fx.Provide(
 		NewConfig,
 		NewServer,
-		NewListener,
+		NewConsumer,
 	)
 	app := fx.New(fx.Options(
 		PackagesModule,
 		ServerModule,
 		RepositoryModule,
 		ServicesModule,
+		ConsumersModule,
 		HandlersModule,
 	), fx.Invoke(StartServer, StartListener))
 	app.Run()

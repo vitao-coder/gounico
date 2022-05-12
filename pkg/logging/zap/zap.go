@@ -11,13 +11,9 @@ type zapLogger struct {
 	logger *zap.Logger
 }
 
-func NewZapLogger(logPath string) (*zapLogger, error) {
+func NewZapLogger() (*zapLogger, error) {
 
-	cfg := zap.NewProductionConfig()
-	cfg.OutputPaths = []string{
-		logPath,
-	}
-
+	cfg := zap.NewDevelopmentConfig()
 	logger, err := cfg.Build()
 
 	if err != nil {
@@ -25,6 +21,10 @@ func NewZapLogger(logPath string) (*zapLogger, error) {
 	}
 
 	return &zapLogger{logger: logger}, nil
+}
+
+func (zl zapLogger) GetInternalLogger() *zap.Logger {
+	return zl.logger
 }
 
 func (zl zapLogger) Debug(ctx context.Context, msg string, object interface{}) {
