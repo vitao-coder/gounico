@@ -7,6 +7,7 @@ import (
 	"gounico/pkg/logging"
 	"gounico/pkg/messaging/pulsar"
 	"gounico/pkg/render"
+	"gounico/pkg/telemetry"
 	"io/ioutil"
 	"net/http"
 
@@ -18,12 +19,14 @@ import (
 type FeiraPublisher struct {
 	publisherClient pulsar.PulsarClient
 	logger          logging.Logger
+	telemetry       telemetry.OpenTelemetry
 }
 
-func NovaFeiraPublisher(publisherClient pulsar.PulsarClient, logger logging.Logger) FeiraPublisher {
+func NovaFeiraPublisher(publisherClient pulsar.PulsarClient, logger logging.Logger, telemetry telemetry.OpenTelemetry) FeiraPublisher {
 	return FeiraPublisher{
 		publisherClient: publisherClient,
 		logger:          logger,
+		telemetry:       telemetry,
 	}
 }
 
@@ -36,6 +39,9 @@ func (h FeiraPublisher) HttpPath() string {
 }
 
 func (h FeiraPublisher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.telemetry.Start(r.Context(), "NovaFeiraPublisher")
+	defer h.telemetry.End()
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		render.RenderRequestError(w, err)
@@ -59,7 +65,7 @@ func (h FeiraPublisher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			h.logger.Error(ctx, fmt.Sprintf("%s - ASYNC Error Message: %v", producer.Producer.Topic()), string(body), err)
 		}
 	})
-
+	h.telemetry.SuccessSpan("Success generated")
 	render.RenderSuccess(w, http.StatusOK, nil)
 	return
 }

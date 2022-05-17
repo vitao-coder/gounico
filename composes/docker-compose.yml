@@ -22,14 +22,9 @@ services:
       PULSAR_MEM: " -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
     command: |
       /bin/bash -c "bin/apply-config-from-env.py conf/standalone.conf && bin/pulsar standalone"
-  dashboard:
-    image: apachepulsar/pulsar-manager:v0.2.0
-    ports:
-      - "9527:9527"
-      - "7750:7750"
-    depends_on:
-      - pulsar
-    links:
-      - pulsar
-    environment:
-      SPRING_CONFIGURATION_FILE: /pulsar-manager/pulsar-manager/application.properties
+  client-jaeger:
+   image: jaegertracing/all-in-one:1.22.0
+   container_name: client-jaeger
+   ports:
+      - "14268:14268"   # jaeger-collector HTTP server (tracer provider)
+      - "16686:16686"   # HTTP server (browser UI)

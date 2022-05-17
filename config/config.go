@@ -5,6 +5,7 @@ type Configuration struct {
 	Worker    Listener  `yaml:"listener"`
 	Database  Database  `yaml:"database"`
 	Messaging Messaging `yaml:"messaging"`
+	Telemetry Telemetry `yaml:"telemetry"`
 }
 
 type Database struct {
@@ -39,4 +40,9 @@ type MessagingConfigurations struct {
 	Topic      string `yaml:"topic"`
 	Subscriber string `yaml:"subscriber"`
 	URL        string `yaml:"url"`
+}
+
+type Telemetry struct {
+	JaegerEndpoint string `yaml:"jaegerEndpoint"`
+	AppName        string `yaml:"appName"`
 }

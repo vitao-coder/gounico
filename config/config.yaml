@@ -22,3 +22,6 @@ messaging:
   configurations: [
     { topic: "feiraLivre", subscriber: "feiraSub", url: "http://localhost:8009/consumers/novafeira" },
   ]
+telemetry:
+    jaegerEndpoint: "http://localhost:14268/api/traces"
+    appName: "feiralivre"

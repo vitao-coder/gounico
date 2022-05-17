@@ -8,6 +8,8 @@ import (
 	"gounico/pkg/logging/zap"
 	"gounico/pkg/messaging/pulsar"
 	clientPulsar "gounico/pkg/messaging/pulsar/client"
+	"gounico/pkg/telemetry"
+	"gounico/pkg/telemetry/openTelemetry"
 	"net/http"
 	"time"
 
@@ -19,6 +21,7 @@ var PackagesModule = fx.Provide(
 	NewDynamoClient,
 	NewPulsarClient,
 	NewHttpClient,
+	NewOpenTelemetry,
 )
 
 func NewLogger() (logging.Logger, error) {
@@ -54,9 +57,13 @@ func NewPulsarClient(config config.Configuration) (pulsar.PulsarClient, error) {
 	return pulsarClient, err
 }
 
-func NewHttpClient(config config.Configuration) *http.Client {
+func NewHttpClient() *http.Client {
 	clientHttp := &http.Client{
 		Timeout: 30 * time.Second,
 	}
 	return clientHttp
+}
+
+func NewOpenTelemetry(config config.Configuration) telemetry.OpenTelemetry {
+	return openTelemetry.NewTracer(config.Telemetry.JaegerEndpoint, config.Telemetry.AppName)
 }
