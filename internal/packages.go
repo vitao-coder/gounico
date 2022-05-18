@@ -2,6 +2,7 @@ package internal
 
 import (
 	"gounico/config"
+	"gounico/global"
 	"gounico/pkg/database/dynamodb"
 	"gounico/pkg/database/dynamodb/client"
 	"gounico/pkg/logging"
@@ -12,6 +13,8 @@ import (
 	"gounico/pkg/telemetry/openTelemetry"
 	"net/http"
 	"time"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"go.uber.org/fx"
 )
@@ -59,11 +62,14 @@ func NewPulsarClient(config config.Configuration) (pulsar.PulsarClient, error) {
 
 func NewHttpClient() *http.Client {
 	clientHttp := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout:   30 * time.Second,
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}
 	return clientHttp
 }
 
 func NewOpenTelemetry(config config.Configuration) telemetry.OpenTelemetry {
-	return openTelemetry.NewTracer(config.Telemetry.JaegerEndpoint, config.Telemetry.AppName)
+	global.AppName = config.Telemetry.AppName
+	tracerProvider := openTelemetry.NewTracer(config.Telemetry.JaegerEndpoint, config.Telemetry.AppName)
+	return tracerProvider
 }

@@ -2,6 +2,7 @@ package openTelemetry
 
 import (
 	"context"
+	"gounico/global"
 
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -12,18 +13,23 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type openTelemetryTracer struct {
-	otelTracer trace.Tracer
-	spanWrapper
+type Provider struct {
+	provider trace.TracerProvider
+	appName  string
 }
 
-func NewTracer(url string, appName string) *openTelemetryTracer {
+func NewTracer(url string, appName string) *Provider {
 	tp, err := jaegerProvider(url, appName)
 	if err != nil {
 		panic(err)
 	}
 	otel.SetTracerProvider(tp)
-	otc := &openTelemetryTracer{otelTracer: otel.Tracer(appName)}
+
+	otc := &Provider{
+		provider: tp,
+		appName:  appName,
+	}
+	global.GlobalTracer = otel.Tracer(global.AppName)
 	return otc
 }
 
@@ -42,8 +48,9 @@ func jaegerProvider(url string, appName string) (*tracesdk.TracerProvider, error
 	return tp, nil
 }
 
-func (ott *openTelemetryTracer) Start(ctx context.Context, spanName string) {
-	context, span := ott.otelTracer.Start(ctx, spanName)
-	ott.spanWrapper = newSpanWrapper(context, span)
-	return
+func (p *Provider) Close(ctx context.Context) error {
+	if prv, ok := p.provider.(*tracesdk.TracerProvider); ok {
+		return prv.Shutdown(ctx)
+	}
+	return nil
 }

@@ -1,11 +1,18 @@
 package errors
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 type ServiceError struct {
 	HttpStatusCode int      `json:"http_status_code,omitempty"`
 	Message        string   `json:"message,omitempty"`
 	Causes         []string `json:"causes,omitempty"`
+}
+
+func (s ServiceError) Error() string {
+	return fmt.Sprintf("StatusCode: %d - Message: %s", s.HttpStatusCode, s.Message)
 }
 
 func InternalServerError(message string, err error) *ServiceError {

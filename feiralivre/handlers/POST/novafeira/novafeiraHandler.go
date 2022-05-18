@@ -2,23 +2,22 @@ package novafeira
 
 import (
 	"encoding/json"
+	"fmt"
 	"gounico/feiralivre"
 	"gounico/feiralivre/domains"
 	"gounico/pkg/render"
-	"gounico/pkg/telemetry"
+	"gounico/pkg/telemetry/openTelemetry"
 	"io/ioutil"
 	"net/http"
 )
 
 type NovaFeiraHandler struct {
 	feiraLivreService feiralivre.FeiraLivre
-	telemetry         telemetry.OpenTelemetry
 }
 
-func NewNovaFeiraHandler(feiraLivreService feiralivre.FeiraLivre, telemetry telemetry.OpenTelemetry) NovaFeiraHandler {
+func NewNovaFeiraHandler(feiraLivreService feiralivre.FeiraLivre) NovaFeiraHandler {
 	return NovaFeiraHandler{
 		feiraLivreService: feiraLivreService,
-		telemetry:         telemetry,
 	}
 }
 
@@ -31,23 +30,38 @@ func (h NovaFeiraHandler) HttpPath() string {
 }
 
 func (h NovaFeiraHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.telemetry.Start(r.Context(), "NewNovaFeiraHandler")
-	defer h.telemetry.End()
+	ctx, traceSpan := openTelemetry.NewSpan(r.Context(), h.HttpPath()+" - Handler")
+
+	defer traceSpan.End()
+
 	newFeira := &domains.FeiraRequest{}
 
 	body, err := ioutil.ReadAll(r.Body)
-	err = json.Unmarshal(body, &newFeira)
 	if err != nil {
+		openTelemetry.FailSpan(traceSpan, fmt.Sprintf("Error: %s", err.Error()))
+		openTelemetry.AddSpanError(traceSpan, err)
 		render.RenderRequestError(w, err)
 		return
 	}
+	errMarshal := json.Unmarshal(body, &newFeira)
+	if errMarshal != nil {
+		openTelemetry.FailSpan(traceSpan, fmt.Sprintf("Error: %s", errMarshal.Error()))
+		openTelemetry.AddSpanError(traceSpan, errMarshal)
+		render.RenderRequestError(w, errMarshal)
+		return
+	}
 
-	apiError := h.feiraLivreService.SaveFeira(r.Context(), newFeira)
+	var mapsTags map[string]string
+	json.Unmarshal(body, &mapsTags)
+	openTelemetry.AddSpanTags(traceSpan, mapsTags)
+	apiError := h.feiraLivreService.SaveFeira(ctx, newFeira)
 	if apiError != nil {
+		openTelemetry.FailSpan(traceSpan, apiError.Error())
+		openTelemetry.AddSpanError(traceSpan, apiError)
 		render.RenderApiError(w, *apiError)
 		return
 	}
-	h.telemetry.SuccessSpan("Success generated")
+	openTelemetry.SuccessSpan(traceSpan, fmt.Sprintf("StatusCode: %d", http.StatusCreated))
 	render.RenderSuccess(w, http.StatusCreated, nil)
 	return
 }

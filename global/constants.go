@@ -1,4 +1,4 @@
-package constants
+package global
 
 const PrimaryType = "feira"
 const SecondaryType = "distrito"

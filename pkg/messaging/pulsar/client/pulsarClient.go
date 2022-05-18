@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"gounico/pkg/messaging/pulsar/tracing"
 
 	"github.com/apache/pulsar-client-go/pulsar"
 )
@@ -27,7 +28,6 @@ type pulsarClient struct {
 }
 
 func NewPulsarClient(URL string) (*pulsarClient, error) {
-
 	client, err := pulsar.NewClient(pulsar.ClientOptions{
 		URL: URL,
 	})
@@ -44,9 +44,11 @@ func NewPulsarClient(URL string) (*pulsarClient, error) {
 }
 
 func (pc *pulsarClient) CreateProducer(topic string) error {
-
 	prod, err := pc.client.CreateProducer(pulsar.ProducerOptions{
 		Topic: topic,
+		Interceptors: pulsar.ProducerInterceptors{
+			&tracing.ProducerInterceptor{},
+		},
 	})
 
 	if err != nil {
@@ -113,6 +115,9 @@ func (pc *pulsarClient) CreateConsumerWithChannels(topic string, subcriptionName
 		Topic:            topic,
 		SubscriptionName: subcriptionName,
 		Type:             pulsar.Exclusive,
+		Interceptors: pulsar.ConsumerInterceptors{
+			&tracing.ConsumerInterceptor{},
+		},
 	}
 
 	options.MessageChannel = channel

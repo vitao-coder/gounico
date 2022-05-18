@@ -2,9 +2,9 @@ package services
 
 import (
 	"context"
-	"gounico/constants"
 	domainFeira "gounico/feiralivre/domains"
 	"gounico/feiralivre/domains/builders"
+	"gounico/global"
 	"gounico/internal/repository"
 	"gounico/pkg/errors"
 	"strings"
@@ -74,10 +74,10 @@ func (fl *processCSV) wrapDomainToEntities(feirasLivresCSV []*domainFeira.Feiras
 			WithLocalizacao(latitude, longitude, feiraCSV.Logradouro, feiraCSV.Numero, feiraCSV.Bairro, feiraCSV.Referencia).
 			WithSubPrefeitura(subPrefID, feiraCSV.SubPrefe)
 
-		builderFeira.WithRegioes(strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao5, constants.RegiaoCutSet), constants.RegiaoCutSet), strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao8, constants.RegiaoCutSet), constants.RegiaoCutSet))
+		builderFeira.WithRegioes(strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao5, global.RegiaoCutSet), global.RegiaoCutSet), strings.TrimRight(strings.TrimLeft(feiraCSV.Regiao8, global.RegiaoCutSet), global.RegiaoCutSet))
 
 		feiraEntity := builderFeira.Build()
-		feiraEntity.Indexes(feiraCSV.Id, constants.PrimaryType, feiraCSV.CodDist, constants.SecondaryType)
+		feiraEntity.Indexes(feiraCSV.Id, global.PrimaryType, feiraCSV.CodDist, global.SecondaryType)
 		feiraEntity.Data(feiraEntity)
 		feiraEntities = append(feiraEntities, feiraEntity)
 	}

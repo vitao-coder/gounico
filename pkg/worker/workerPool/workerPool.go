@@ -33,7 +33,7 @@ func start(ctx context.Context, wg *sync.WaitGroup, jobs <-chan worker.WorkerJob
 
 				return
 			}
-			results <- job.ExecuteJob(ctx)
+			results <- job.ExecuteJob()
 		case <-ctx.Done():
 			fmt.Printf("cancelled worker. Error detail: %v\n", ctx.Err())
 			results <- worker.WorkerJobResult{

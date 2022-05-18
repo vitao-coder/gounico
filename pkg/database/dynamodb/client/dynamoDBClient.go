@@ -1,7 +1,10 @@
 package client
 
 import (
+	"context"
+	"fmt"
 	"gounico/pkg/database/dynamodb/domain"
+	"gounico/pkg/telemetry/openTelemetry"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
 
@@ -45,14 +48,19 @@ func (dbc *DynamoDBClient) PutBatch(batchArray []interface{}) error {
 	return nil
 }
 
-func (dbc *DynamoDBClient) Put(dynamoData domain.Data) error {
+func (dbc *DynamoDBClient) Put(ctx context.Context, dynamoData domain.Data) error {
+	ctx, traceSpan := openTelemetry.NewSpan(ctx, "DynamoDBClient.Put")
+	defer traceSpan.End()
 
 	if err := dynamoData.IsDataValid(); err != nil {
 		return err
 	}
 	if errPut := dbc.table.Put(dynamoData.DataDomain()).Run(); errPut != nil {
+		openTelemetry.FailSpan(traceSpan, fmt.Sprintf("Error: %s", errPut.Error()))
+		openTelemetry.AddSpanError(traceSpan, errPut)
 		return errPut
 	}
+	openTelemetry.SuccessSpan(traceSpan, "Success")
 	return nil
 }
 

@@ -9,7 +9,6 @@ import (
 	"gounico/feiralivre/handlers/PUT/alterarfeira"
 	"gounico/pkg/logging"
 	"gounico/pkg/messaging/pulsar"
-	"gounico/pkg/telemetry"
 
 	"go.uber.org/fx"
 )
@@ -49,15 +48,16 @@ func NewExcluirFeiraHandler(service feiralivre.FeiraLivre) HandlerOutput {
 	}
 }
 
-func NewNovaFeiraHandler(service feiralivre.FeiraLivre, telemetry telemetry.OpenTelemetry) HandlerOutput {
-	handlerEndpoint := novafeira.NewNovaFeiraHandler(service, telemetry)
+func NewNovaFeiraHandler(service feiralivre.FeiraLivre) HandlerOutput {
+	handlerEndpoint := novafeira.NewNovaFeiraHandler(service)
+
 	return HandlerOutput{
 		Endpoint: handlerEndpoint,
 	}
 }
 
-func NewNovaFeiraPublisher(pulsar pulsar.PulsarClient, logger logging.Logger, telemetry telemetry.OpenTelemetry) HandlerOutput {
-	handlerEndpoint := novafeira.NovaFeiraPublisher(pulsar, logger, telemetry)
+func NewNovaFeiraPublisher(pulsar pulsar.PulsarClient, logger logging.Logger) HandlerOutput {
+	handlerEndpoint := novafeira.NovaFeiraPublisher(pulsar, logger)
 	return HandlerOutput{
 		Endpoint: handlerEndpoint,
 	}

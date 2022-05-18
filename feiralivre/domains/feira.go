@@ -38,3 +38,7 @@ func (f *Feira) Indexes(primaryId string, primaryType string, secondaryID string
 func (f *Feira) Data(feiraDomainData *Feira) {
 	f.indexes.Data = feiraDomainData
 }
+
+func (f *Feira) GetIndexes() *domain.DynamoDomain {
+	return f.indexes
+}

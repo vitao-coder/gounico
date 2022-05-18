@@ -6,6 +6,8 @@ import (
 	"gounico/config"
 	"gounico/internal/listener"
 	"gounico/pkg/logging"
+	"gounico/pkg/telemetry"
+	"gounico/pkg/telemetry/openTelemetry"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -82,7 +84,9 @@ func NewServer(logger logging.Logger, endpointsRouter Router) *MuxRouter {
 	})
 
 	for _, endpoint := range endpointsRouter.Endpoints {
-		r.Method(endpoint.HttpMethod(), endpoint.HttpPath(), endpoint)
+		handlerTelemetry := openTelemetry.HTTPHandler(endpoint, endpoint.HttpPath())
+		r.Method(endpoint.HttpMethod(), endpoint.HttpPath(), handlerTelemetry)
+
 		logger.Info(context.Background(), fmt.Sprintf("Method: %s - Pattern: %s - Registered.", endpoint.HttpMethod(), endpoint.HttpPath()), nil)
 	}
 
@@ -103,7 +107,8 @@ func NewConsumer(logger logging.Logger, endpointsConsumers Consumer) *MuxConsume
 	})
 
 	for _, endpoint := range endpointsConsumers.Consumers {
-		r.Method(endpoint.HttpMethod(), endpoint.HttpPath(), endpoint)
+		handlerTelemetry := openTelemetry.HTTPHandler(endpoint, endpoint.HttpPath())
+		r.Method(endpoint.HttpMethod(), endpoint.HttpPath(), handlerTelemetry)
 		logger.Info(context.Background(), fmt.Sprintf("Consumer: %s - Pattern: %s - Registered.", endpoint.HttpMethod(), endpoint.HttpPath()), nil)
 	}
 
@@ -111,7 +116,7 @@ func NewConsumer(logger logging.Logger, endpointsConsumers Consumer) *MuxConsume
 	return &MuxConsumer{r}
 }
 
-func StartServer(lc fx.Lifecycle, logger logging.Logger, server *MuxRouter, config config.Configuration) {
+func StartServer(lc fx.Lifecycle, logger logging.Logger, server *MuxRouter, config config.Configuration, telemetry telemetry.OpenTelemetry) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			logger.Info(ctx, "Start server", nil)
@@ -119,6 +124,7 @@ func StartServer(lc fx.Lifecycle, logger logging.Logger, server *MuxRouter, conf
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
+			telemetry.Close(ctx)
 			logger.Info(ctx, "Stop server", nil)
 			return nil
 		},

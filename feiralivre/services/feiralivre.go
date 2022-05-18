@@ -2,12 +2,17 @@ package services
 
 import (
 	"context"
-	"gounico/constants"
+	"fmt"
 	"gounico/feiralivre/domains"
 	"gounico/feiralivre/domains/builders"
+	"gounico/global"
 	internalRepo "gounico/internal/repository"
 	"gounico/pkg/errors"
+	"gounico/pkg/telemetry/openTelemetry"
+	"net/http"
 	"strings"
+
+	"github.com/google/uuid"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -23,8 +28,12 @@ func NewFeiraLivreService(repository internalRepo.Repository) *feiraLivre {
 }
 
 func (f *feiraLivre) SaveFeira(ctx context.Context, request *domains.FeiraRequest) *errors.ServiceError {
+	ctx, traceSpan := openTelemetry.NewSpan(ctx, "Service - SaveFeira")
+	defer traceSpan.End()
 	feiraID, distritoID, longitude, latitude, subPrefID, err := request.StringsToPrimitiveTypes()
 	if err != nil {
+		openTelemetry.FailSpan(traceSpan, fmt.Sprintf("Error: %s", err.Error()))
+		openTelemetry.AddSpanError(traceSpan, err)
 		return errors.BadRequestError("data request is not valid")
 	}
 
@@ -34,20 +43,27 @@ func (f *feiraLivre) SaveFeira(ctx context.Context, request *domains.FeiraReques
 		WithDistrito(distritoID, request.Distrito).
 		WithLocalizacao(latitude, longitude, request.Logradouro, request.Numero, request.Bairro, request.Referencia).
 		WithSubPrefeitura(subPrefID, request.SubPrefe).
-		WithRegioes(strings.TrimRight(strings.TrimLeft(request.Regiao5, constants.RegiaoCutSet), constants.RegiaoCutSet), strings.TrimRight(strings.TrimLeft(request.Regiao8, constants.RegiaoCutSet), constants.RegiaoCutSet))
+		WithRegioes(strings.TrimRight(strings.TrimLeft(request.Regiao5, global.RegiaoCutSet), global.RegiaoCutSet), strings.TrimRight(strings.TrimLeft(request.Regiao8, global.RegiaoCutSet), global.RegiaoCutSet))
 	feiraEntity := builderFeira.Build()
-	feiraEntity.Indexes(request.Id, constants.PrimaryType, request.CodDist, constants.SecondaryType)
+	request.Id = uuid.New().String()
+	feiraEntity.Indexes(request.Id, global.PrimaryType, request.CodDist, global.SecondaryType)
 	feiraEntity.Data(feiraEntity)
+	indexes := feiraEntity.GetIndexes()
 
-	if err := f.repository.Save(feiraEntity); err != nil {
+	openTelemetry.AddSpanTags(traceSpan, buildFeiraTelemetryTags(indexes.PartitionKey, indexes.SortKey, indexes.UID))
+	if err := f.repository.Save(ctx, feiraEntity); err != nil {
+		openTelemetry.FailSpan(traceSpan, fmt.Sprintf("Error: %s", err.Error()))
+		openTelemetry.AddSpanError(traceSpan, err)
 		return err
 	}
+
+	openTelemetry.SuccessSpan(traceSpan, fmt.Sprintf("StatusCode: %d", http.StatusCreated))
 	return nil
 }
 
 func (f *feiraLivre) ExcluirFeira(ctx context.Context, feiraID string, distritoID string) *errors.ServiceError {
 
-	if err := f.repository.Delete(feiraID, constants.PrimaryType, distritoID, constants.SecondaryType); err != nil {
+	if err := f.repository.Delete(feiraID, global.PrimaryType, distritoID, global.SecondaryType); err != nil {
 		return err
 	}
 
@@ -56,7 +72,7 @@ func (f *feiraLivre) ExcluirFeira(ctx context.Context, feiraID string, distritoI
 
 func (f *feiraLivre) BuscarFeiraPorDistrito(ctx context.Context, distritoID string) ([]domains.Feira, *errors.ServiceError) {
 
-	feiras, err := f.repository.GetBySecondaryID(distritoID, constants.SecondaryType)
+	feiras, err := f.repository.GetBySecondaryID(distritoID, global.SecondaryType)
 
 	if err != nil {
 		return nil, err
@@ -77,4 +93,12 @@ func (f *feiraLivre) BuscarFeiraPorDistrito(ctx context.Context, distritoID stri
 	}
 
 	return feirasPorDistrito, nil
+}
+
+func buildFeiraTelemetryTags(partitionKey string, sortKey string, uid string) map[string]string {
+	return map[string]string{
+		"partitionKey": partitionKey,
+		"sortKey":      sortKey,
+		"UID":          uid,
+	}
 }

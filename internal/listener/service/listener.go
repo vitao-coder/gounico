@@ -6,17 +6,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gounico/constants"
 	"gounico/feiralivre/domains"
+	"gounico/global"
 	"gounico/pkg/apiclient"
 	"gounico/pkg/logging"
 	pulsar2 "gounico/pkg/messaging/pulsar"
+	"gounico/pkg/messaging/pulsar/tracing"
+	"gounico/pkg/telemetry/openTelemetry"
 	"gounico/pkg/worker"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
+
+	"go.opentelemetry.io/otel/propagation"
 
 	"github.com/apache/pulsar-client-go/pulsar"
 )
@@ -55,12 +59,12 @@ func NewListener(workerService worker.Worker,
 func (l *Listener) RunListenerService() {
 	l.ctx = context.Background()
 	go l.workerService.Run(l.ctx)
-	l.logger.Info(l.ctx, "Started listener - Worker service", nil)
+	l.logger.Info(l.ctx, "Started listener - Workers services", nil)
 	go l.listenResults()
-	l.logger.Info(l.ctx, "Started listener - Listen service", nil)
+	l.logger.Info(l.ctx, "Started listener - Listeners service", nil)
 	l.createConsumerChannels()
 	go l.runConsumerChannels(l.ctx)
-	l.logger.Info(l.ctx, "Started listener - Consumer service", nil)
+	l.logger.Info(l.ctx, "Started listener - Consumers services", nil)
 	//l.TestProducerMessage()
 
 }
@@ -114,10 +118,12 @@ func startConsumingMessages(ctx context.Context, consumerName string, logger log
 			if !ok {
 				continue
 			}
+
 			msg := chMsg.Message
 			json, _ := json.Marshal(msg.Payload())
 			logger.Debug(ctx, fmt.Sprintf("%s - Received message in consumer. Message: %s", consumerName, msg.Payload()), string(json))
-			workerService.AddJobs(createWorkerJOB(consumerName, postURL, msg, consumer, httpClient))
+			ctxExtracted := buildAndExtractContext(ctx, chMsg)
+			workerService.AddJobs(createWorkerJOB(fmt.Sprintf("Consumer - %s MessageKey - %s", consumerName, msg.Key()), postURL, msg, consumer, httpClient, ctxExtracted))
 		case <-ctx.Done():
 			qtdMsgs := len(messages)
 			if qtdMsgs > 0 {
@@ -126,6 +132,12 @@ func startConsumingMessages(ctx context.Context, consumerName string, logger log
 			continue
 		}
 	}
+}
+
+func buildAndExtractContext(ctx context.Context, message pulsar.ConsumerMessage) context.Context {
+	consumerAdapter := tracing.ConsumerMessageAdapter{Message: message}
+	traceContext := propagation.TraceContext{}
+	return traceContext.Extract(ctx, &consumerAdapter)
 }
 
 func postFunction(consumer pulsar.Consumer, httpClient *http.Client) worker.JobFunction {
@@ -137,12 +149,15 @@ func postFunction(consumer pulsar.Consumer, httpClient *http.Client) worker.JobF
 		msg := insideParams[0].(pulsar.Message)
 
 		urlToPost := insideParams[1].(string)
+
 		payloadToPost := msg.Payload()
+
+		ctxRequest, traceSpan := openTelemetry.NewSpan(ctx, fmt.Sprintf("Listener.PostToConsumer - %s", msg.Key()))
+		defer traceSpan.End()
 
 		r := bytes.NewReader(payloadToPost)
 
-		ctxRequest := context.Background()
-		result, err := apiclient.Post(ctxRequest, httpClient, urlToPost, constants.ContentTypeJson, r)
+		result, err := apiclient.Post(ctxRequest, httpClient, urlToPost, global.ContentTypeJson, r)
 		if err != nil || result.StatusCode > 400 {
 			if err == nil {
 				return nil, errors.New("Error +400 calling POST Consumer.")
@@ -158,11 +173,11 @@ func postFunction(consumer pulsar.Consumer, httpClient *http.Client) worker.JobF
 	return postFunction
 }
 
-func createWorkerJOB(name string, urlToPost string, msg pulsar.Message, consumer pulsar.Consumer, httpClient *http.Client) worker.WorkerJob {
+func createWorkerJOB(name string, urlToPost string, msg pulsar.Message, consumer pulsar.Consumer, httpClient *http.Client, ctx context.Context) worker.WorkerJob {
 	var params []interface{}
 	params = append(params, msg)
 	params = append(params, urlToPost)
-	workerJob := worker.NewWorkerJob(name, postFunction(consumer, httpClient), params)
+	workerJob := worker.NewWorkerJob(name, postFunction(consumer, httpClient), ctx, params)
 	return workerJob
 }
 
