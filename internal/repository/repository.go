@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
-	client "gounico/pkg/database/dynamodb"
+	client "gounico/pkg/database"
 	"gounico/pkg/database/dynamodb/domain"
 	"gounico/pkg/errors"
 	"gounico/pkg/telemetry/openTelemetry"
@@ -18,10 +18,10 @@ type Repository interface {
 }
 
 type repository struct {
-	dataClient client.DynamoClient
+	dataClient client.Database
 }
 
-func NewRepository(dataClient client.DynamoClient) *repository {
+func NewRepository(dataClient client.Database) *repository {
 	return &repository{dataClient: dataClient}
 }
 
@@ -34,8 +34,9 @@ func (repo *repository) BatchSave(dynamoData []interface{}) *errors.ServiceError
 }
 
 func (repo *repository) Save(ctx context.Context, dynamoData domain.Data) *errors.ServiceError {
-	ctx, traceSpan := openTelemetry.NewSpan(ctx, "Repository.Save")
+	ctx, traceSpan := openTelemetry.TraceContextSpan(ctx, "Repository - Save")
 	defer traceSpan.End()
+
 	err := repo.dataClient.Put(ctx, dynamoData)
 	if err != nil {
 		openTelemetry.FailSpan(traceSpan, fmt.Sprintf("Error: %s", err.Error()))

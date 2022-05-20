@@ -3,6 +3,10 @@ package openTelemetry
 import (
 	"context"
 	"gounico/global"
+	"gounico/pkg/messaging/pulsar/tracing"
+
+	"github.com/apache/pulsar-client-go/pulsar"
+	"go.opentelemetry.io/otel/propagation"
 
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -53,4 +57,50 @@ func (p *Provider) Close(ctx context.Context) error {
 		return prv.Shutdown(ctx)
 	}
 	return nil
+}
+
+func ExtractTraceContextFromMessage(ctx context.Context, message pulsar.ConsumerMessage) context.Context {
+	consumerAdapter := tracing.ConsumerMessageAdapter{Message: message}
+	traceContext := propagation.TraceContext{}
+	return traceContext.Extract(ctx, &consumerAdapter)
+}
+
+func BuildAndInjectSpanOnMessageContext(ctx context.Context, injectedSpanName string, message *pulsar.ProducerMessage) context.Context {
+	ctxWithSpan, traceSpan := NewSpan(ctx, injectedSpanName)
+	traceContext := propagation.TraceContext{}
+	message.Properties = map[string]string{}
+	producerAdapter := tracing.ProducerMessageAdapter{Message: message}
+	traceContext.Inject(ctxWithSpan, &producerAdapter)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+		traceContext,
+	))
+
+	ctxInjected := ContextWithSpan(ctx, traceSpan)
+
+	return ctxInjected
+}
+
+func buildAndInjectSpanOnContext(ctx context.Context, injectedSpanName string) context.Context {
+	ctxWithSpan, traceSpan := NewSpan(ctx, injectedSpanName)
+	traceContext := propagation.TraceContext{}
+	contextAdapter := ContextAdapter{ctx}
+	traceContext.Inject(ctxWithSpan, &contextAdapter)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+		traceContext,
+	))
+	ctxInjected := ContextWithSpan(ctx, traceSpan)
+	return ctxInjected
+}
+
+func extractTraceContextFromContext(ctx context.Context) context.Context {
+	contextAdapter := ContextAdapter{ctx}
+	traceContext := propagation.TraceContext{}
+	return traceContext.Extract(ctx, &contextAdapter)
+}
+
+func TraceContextSpan(ctx context.Context, contextName string) (context.Context, trace.Span) {
+	ctxExtracted := extractTraceContextFromContext(ctx)
+	ctx = buildAndInjectSpanOnContext(ctxExtracted, contextName)
+	traceSpan := SpanFromContext(ctx)
+	return ctx, traceSpan
 }

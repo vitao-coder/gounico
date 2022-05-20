@@ -3,11 +3,11 @@ package internal
 import (
 	"gounico/config"
 	"gounico/global"
-	"gounico/pkg/database/dynamodb"
+	"gounico/pkg/database"
 	"gounico/pkg/database/dynamodb/client"
 	"gounico/pkg/logging"
 	"gounico/pkg/logging/zap"
-	"gounico/pkg/messaging/pulsar"
+	"gounico/pkg/messaging"
 	clientPulsar "gounico/pkg/messaging/pulsar/client"
 	"gounico/pkg/telemetry"
 	"gounico/pkg/telemetry/openTelemetry"
@@ -32,7 +32,7 @@ func NewLogger() (logging.Logger, error) {
 	return logger, err
 }
 
-func NewDynamoClient(config config.Configuration) dynamodb.DynamoClient {
+func NewDynamoClient(config config.Configuration) database.Database {
 	clientDynamo := client.NewDynamoDBClient(config.Database.EndpointURL,
 		config.Database.Region,
 		config.Database.AccessKeyID,
@@ -42,7 +42,7 @@ func NewDynamoClient(config config.Configuration) dynamodb.DynamoClient {
 	return clientDynamo
 }
 
-func NewPulsarClient(config config.Configuration) (pulsar.PulsarClient, error) {
+func NewPulsarClient(config config.Configuration) (messaging.Messaging, error) {
 	pulsarClient, err := clientPulsar.NewPulsarClient(config.Messaging.BrokerURL)
 
 	if err != nil {
@@ -62,7 +62,7 @@ func NewPulsarClient(config config.Configuration) (pulsar.PulsarClient, error) {
 
 func NewHttpClient() *http.Client {
 	clientHttp := &http.Client{
-		Timeout:   30 * time.Second,
+		Timeout:   60 * time.Second,
 		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}
 	return clientHttp

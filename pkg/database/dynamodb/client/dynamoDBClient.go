@@ -49,7 +49,7 @@ func (dbc *DynamoDBClient) PutBatch(batchArray []interface{}) error {
 }
 
 func (dbc *DynamoDBClient) Put(ctx context.Context, dynamoData domain.Data) error {
-	ctx, traceSpan := openTelemetry.NewSpan(ctx, "DynamoDBClient.Put")
+	ctx, traceSpan := openTelemetry.TraceContextSpan(ctx, "DynamoDBClient - Put")
 	defer traceSpan.End()
 
 	if err := dynamoData.IsDataValid(); err != nil {
@@ -62,6 +62,14 @@ func (dbc *DynamoDBClient) Put(ctx context.Context, dynamoData domain.Data) erro
 	}
 	openTelemetry.SuccessSpan(traceSpan, "Success")
 	return nil
+}
+
+func (dbc *DynamoDBClient) PutAsync(ctx context.Context, dynamoData domain.Data) error {
+	var err error
+	go func() {
+		err = dbc.Put(ctx, dynamoData)
+	}()
+	return err
 }
 
 func (dbc *DynamoDBClient) GetByIDAndPID(id string, pid string) (*domain.DynamoDomain, error) {

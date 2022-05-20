@@ -30,7 +30,7 @@ func (h NovaFeiraConsumer) HttpPath() string {
 }
 
 func (h NovaFeiraConsumer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx, traceSpan := openTelemetry.NewSpan(r.Context(), h.HttpPath()+" - Handler")
+	ctx, traceSpan := openTelemetry.NewSpan(r.Context(), "Consumer - Handler")
 	defer traceSpan.End()
 
 	newFeira := &domains.FeiraRequest{}

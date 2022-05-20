@@ -2,11 +2,12 @@ package worker
 
 import (
 	"context"
+	"gounico/pkg/worker/domain"
 )
 
 type Worker interface {
 	Run(ctx context.Context)
-	AddJobs(workJobs ...WorkerJob)
-	Results() <-chan WorkerJobResult
+	AddJobs(workJobs ...domain.WorkerJob)
+	Results() <-chan domain.WorkerJobResult
 	Finished() <-chan struct{}
 }

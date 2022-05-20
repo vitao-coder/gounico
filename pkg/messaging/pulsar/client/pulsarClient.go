@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"gounico/pkg/messaging/pulsar/tracing"
 
 	"github.com/apache/pulsar-client-go/pulsar"
 )
 
 type consumer struct {
+	name          string
 	subscribeName string
 	topicName     string
 	consumerMsg   chan pulsar.ConsumerMessage
@@ -46,9 +46,9 @@ func NewPulsarClient(URL string) (*pulsarClient, error) {
 func (pc *pulsarClient) CreateProducer(topic string) error {
 	prod, err := pc.client.CreateProducer(pulsar.ProducerOptions{
 		Topic: topic,
-		Interceptors: pulsar.ProducerInterceptors{
+		/*Interceptors: pulsar.ProducerInterceptors{
 			&tracing.ProducerInterceptor{},
-		},
+		},*/
 	})
 
 	if err != nil {
@@ -103,7 +103,7 @@ func (pc *pulsarClient) SendMessage(ctx context.Context, topic string, payload i
 	return nil
 }
 
-func (pc *pulsarClient) CreateConsumerWithChannels(topic string, subcriptionName string, channelLimit int) error {
+func (pc *pulsarClient) CreateConsumerWithChannels(topic string, subcriptionName string, consumerName string, channelLimit int) error {
 	exists, _ := pc.ExistsGetProducer(topic)
 	if !exists {
 		return errors.New("producer topic not found")
@@ -112,12 +112,13 @@ func (pc *pulsarClient) CreateConsumerWithChannels(topic string, subcriptionName
 	channel := make(chan pulsar.ConsumerMessage, channelLimit)
 
 	options := pulsar.ConsumerOptions{
+		Name:             consumerName,
 		Topic:            topic,
 		SubscriptionName: subcriptionName,
-		Type:             pulsar.Exclusive,
-		Interceptors: pulsar.ConsumerInterceptors{
+		Type:             pulsar.Shared,
+		/*Interceptors: pulsar.ConsumerInterceptors{
 			&tracing.ConsumerInterceptor{},
-		},
+		},*/
 	}
 
 	options.MessageChannel = channel
@@ -126,38 +127,38 @@ func (pc *pulsarClient) CreateConsumerWithChannels(topic string, subcriptionName
 		return err
 	}
 
-	pc.addConsumer(topic, subcriptionName, cons, channel)
+	pc.addConsumer(topic, subcriptionName, consumerName, cons, channel)
 	return nil
 }
 
-func (pc *pulsarClient) existsConsumer(topic string, subcriptionName string) bool {
+func (pc *pulsarClient) existsConsumer(topic string, subcriptionName string, name string) bool {
 	for _, c := range pc.consumers {
-		if c.topicName == topic && c.subscribeName == subcriptionName {
+		if c.topicName == topic && c.subscribeName == subcriptionName && c.name == name {
 			return true
 		}
 	}
 	return false
 }
 
-func (pc *pulsarClient) GetConsumer(topic string, subcriptionName string) (pulsar.Consumer, chan pulsar.ConsumerMessage) {
+func (pc *pulsarClient) GetConsumer(topic string, subcriptionName string, name string) (pulsar.Consumer, chan pulsar.ConsumerMessage) {
 	for _, c := range pc.consumers {
-		if c.topicName == topic && c.subscribeName == subcriptionName {
+		if c.topicName == topic && c.subscribeName == subcriptionName && c.name == name {
 			return c.consumer, c.consumerMsg
 		}
 	}
 	return nil, nil
 }
 
-func (pc *pulsarClient) addConsumer(topic string, subcriptionName string, cons pulsar.Consumer, consumerChannel chan pulsar.ConsumerMessage) {
-	exists := pc.existsConsumer(topic, subcriptionName)
+func (pc *pulsarClient) addConsumer(topic string, subcriptionName string, name string, cons pulsar.Consumer, consumerChannel chan pulsar.ConsumerMessage) {
+	exists := pc.existsConsumer(topic, subcriptionName, name)
 	if !exists {
 		internalConsumer := consumer{
+			name:          name,
 			subscribeName: subcriptionName,
 			topicName:     topic,
 			consumerMsg:   consumerChannel,
 			consumer:      cons,
 		}
-
 		pc.consumers = append(pc.consumers, internalConsumer)
 	}
 }

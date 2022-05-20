@@ -16,12 +16,12 @@ database:
   sessionToken: "dummy"
   endpointURL: "http://127.0.0.1:8000"
 messaging:
-  brokerURL: "pulsar://localhost:6650"
-  workerPoolLimit: 100
+  brokerURL: "pulsar://127.0.0.1:6650"
+  workerPoolLimit: 500
   channelConsumerLimit: 500
   configurations: [
     { topic: "feiraLivre", subscriber: "feiraSub", url: "http://host.docker.internal:8009/consumers/novafeira" },
   ]
 telemetry:
-  jaegerEndpoint: "http://localhost:14268/api/traces"
+  jaegerEndpoint: "http://127.0.0.1:14268/api/traces"
   appName: "feiralivre"

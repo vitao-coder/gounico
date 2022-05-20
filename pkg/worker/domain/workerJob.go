@@ -1,4 +1,4 @@
-package worker
+package domain
 
 import (
 	"context"
@@ -31,21 +31,28 @@ func NewWorkerJob(workerJobDescriptor string, jobFunc JobFunction, ctx context.C
 }
 
 func (wj WorkerJob) ExecuteJob() WorkerJobResult {
-	ctx, traceSpan := openTelemetry.NewSpan(wj.ctx, fmt.Sprintf("WorkerJob.ExecuteJob - %s", wj.Descriptor))
-	defer traceSpan.End()
-
-	result, err := wj.Job(ctx, wj.Params)
-	if err != nil {
-		openTelemetry.FailSpan(traceSpan, fmt.Sprintf("Error: %s", err.Error()))
-		openTelemetry.AddSpanError(traceSpan, err)
-		return WorkerJobResult{
-			Error:               err,
+	var resultWork WorkerJobResult
+	go func() {
+		var result interface{}
+		var err error
+		traceSpan := openTelemetry.SpanFromContext(wj.ctx)
+		defer traceSpan.End()
+		result, err = wj.Job(wj.ctx, wj.Params)
+		if err != nil {
+			openTelemetry.FailSpan(traceSpan, fmt.Sprintf("Error: %s", err.Error()))
+			openTelemetry.AddSpanError(traceSpan, err)
+			resultWork = WorkerJobResult{
+				Error:               err,
+				WorkerJobDescriptor: wj.Descriptor,
+			}
+			return
+		}
+		openTelemetry.SuccessSpan(traceSpan, fmt.Sprintf("Success"))
+		resultWork = WorkerJobResult{
+			Result:              result,
 			WorkerJobDescriptor: wj.Descriptor,
 		}
-	}
-	openTelemetry.SuccessSpan(traceSpan, "Success")
-	return WorkerJobResult{
-		Result:              result,
-		WorkerJobDescriptor: wj.Descriptor,
-	}
+		return
+	}()
+	return resultWork
 }

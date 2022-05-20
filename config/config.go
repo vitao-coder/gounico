@@ -31,9 +31,10 @@ type Listener struct {
 }
 
 type Messaging struct {
-	BrokerURL      string                    `yaml:"brokerURL"`
-	ConsumerLimit  int                       `yaml:"channelConsumerLimit"`
-	Configurations []MessagingConfigurations `yaml:"configurations"`
+	BrokerURL       string                    `yaml:"brokerURL"`
+	ConsumerLimit   int                       `yaml:"channelConsumerLimit"`
+	WorkerPoolLimit int                       `yaml:"workerPoolLimit"`
+	Configurations  []MessagingConfigurations `yaml:"configurations"`
 }
 
 type MessagingConfigurations struct {

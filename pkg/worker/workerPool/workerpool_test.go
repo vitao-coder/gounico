@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"gounico/pkg/worker"
+	"gounico/pkg/worker/domain"
 	"gounico/utils"
 	"testing"
 	"time"
@@ -96,17 +96,17 @@ func addALotOfJobs(wp *WorkerPool, jobVolume int) {
 	}
 }
 
-func job(name string) worker.WorkerJob {
+func job(name string) domain.WorkerJob {
 	var paramsTest []interface{}
 	paramsTest = append(paramsTest, "paramA")
 	paramsTest = append(paramsTest, "paramB")
-	return worker.NewWorkerJob(name, execTestFunction, paramsTest...)
+	return domain.NewWorkerJob(name, execTestFunction, context.TODO(), paramsTest)
 }
 
-func jobError(name string) worker.WorkerJob {
+func jobError(name string) domain.WorkerJob {
 	var paramsTest []interface{}
 	paramsTest = append(paramsTest, "paramD")
-	return worker.NewWorkerJob(name, execTestFunctionError, paramsTest...)
+	return domain.NewWorkerJob(name, execTestFunctionError, context.TODO(), paramsTest...)
 }
 
 var (

@@ -1,22 +1,16 @@
 package novafeira
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"gounico/feiralivre/domains"
 	"gounico/pkg/errors"
 	"gounico/pkg/logging"
-	"gounico/pkg/messaging/pulsar"
-	"gounico/pkg/messaging/pulsar/tracing"
+	"gounico/pkg/messaging"
 	"gounico/pkg/render"
 	"gounico/pkg/telemetry/openTelemetry"
 	"io/ioutil"
 	"net/http"
-
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/trace"
 
 	"github.com/google/uuid"
 
@@ -24,11 +18,11 @@ import (
 )
 
 type FeiraPublisher struct {
-	publisherClient pulsar.PulsarClient
+	publisherClient messaging.Messaging
 	logger          logging.Logger
 }
 
-func NovaFeiraPublisher(publisherClient pulsar.PulsarClient, logger logging.Logger) FeiraPublisher {
+func NovaFeiraPublisher(publisherClient messaging.Messaging, logger logging.Logger) FeiraPublisher {
 	return FeiraPublisher{
 		publisherClient: publisherClient,
 		logger:          logger,
@@ -60,8 +54,8 @@ func (h FeiraPublisher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	errMarshal := json.Unmarshal(body, &newFeira)
 	if errMarshal != nil {
-		openTelemetry.FailSpan(traceSpan, fmt.Sprintf("Error: %s", errMarshal.Error()))
 		openTelemetry.AddSpanError(traceSpan, errMarshal)
+		openTelemetry.FailSpan(traceSpan, fmt.Sprintf("Error: %s", errMarshal.Error()))
 		render.RenderRequestError(w, errMarshal)
 		return
 	}
@@ -83,8 +77,7 @@ func (h FeiraPublisher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Payload: body,
 	}
 
-	spanProducerMessage := buildAndInjectSpan(ctx, asyncMsg)
-	ctxPublisher := openTelemetry.ContextWithSpan(ctx, spanProducerMessage)
+	ctxPublisher := openTelemetry.BuildAndInjectSpanOnMessageContext(ctx, "Server - pulsar.Producer", asyncMsg)
 
 	producer.Producer.SendAsync(ctxPublisher, asyncMsg, func(msgId pulsarApache.MessageID, msg *pulsarApache.ProducerMessage, err error) {
 		traceProducerSpan := openTelemetry.SpanFromContext(ctxPublisher)
@@ -94,20 +87,7 @@ func (h FeiraPublisher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			openTelemetry.FailSpan(traceSpan, err.Error())
 			openTelemetry.AddSpanError(traceSpan, err)
 		}
-		defer traceProducerSpan.End()
 	})
 	render.RenderSuccess(w, http.StatusOK, nil)
 	return
-}
-
-func buildAndInjectSpan(ctx context.Context, message *pulsarApache.ProducerMessage) trace.Span {
-	ctxWithSpan, traceSpan := openTelemetry.NewSpan(ctx, "pulsar.ProducerMessage")
-	traceContext := propagation.TraceContext{}
-	message.Properties = map[string]string{}
-	producerAdapter := tracing.ProducerMessageAdapter{Message: message}
-	traceContext.Inject(ctxWithSpan, &producerAdapter)
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
-		traceContext,
-	))
-	return traceSpan
 }

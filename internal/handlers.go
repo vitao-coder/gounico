@@ -8,7 +8,7 @@ import (
 	"gounico/feiralivre/handlers/POST/processcsv"
 	"gounico/feiralivre/handlers/PUT/alterarfeira"
 	"gounico/pkg/logging"
-	"gounico/pkg/messaging/pulsar"
+	"gounico/pkg/messaging"
 
 	"go.uber.org/fx"
 )
@@ -56,7 +56,7 @@ func NewNovaFeiraHandler(service feiralivre.FeiraLivre) HandlerOutput {
 	}
 }
 
-func NewNovaFeiraPublisher(pulsar pulsar.PulsarClient, logger logging.Logger) HandlerOutput {
+func NewNovaFeiraPublisher(pulsar messaging.Messaging, logger logging.Logger) HandlerOutput {
 	handlerEndpoint := novafeira.NovaFeiraPublisher(pulsar, logger)
 	return HandlerOutput{
 		Endpoint: handlerEndpoint,

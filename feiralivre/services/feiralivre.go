@@ -28,8 +28,9 @@ func NewFeiraLivreService(repository internalRepo.Repository) *feiraLivre {
 }
 
 func (f *feiraLivre) SaveFeira(ctx context.Context, request *domains.FeiraRequest) *errors.ServiceError {
-	ctx, traceSpan := openTelemetry.NewSpan(ctx, "Service - SaveFeira")
+	ctx, traceSpan := openTelemetry.TraceContextSpan(ctx, "Service - SaveFeira")
 	defer traceSpan.End()
+
 	feiraID, distritoID, longitude, latitude, subPrefID, err := request.StringsToPrimitiveTypes()
 	if err != nil {
 		openTelemetry.FailSpan(traceSpan, fmt.Sprintf("Error: %s", err.Error()))

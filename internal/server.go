@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gounico/config"
-	"gounico/internal/listener"
+	"gounico/pkg/listener"
 	"gounico/pkg/logging"
 	"gounico/pkg/telemetry"
 	"gounico/pkg/telemetry/openTelemetry"

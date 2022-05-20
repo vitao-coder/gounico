@@ -10,7 +10,6 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/guregu/dynamo v1.15.0
 	github.com/mitchellh/mapstructure v1.4.3
-	github.com/opentracing/opentracing-go v1.2.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.32.0
 	go.opentelemetry.io/otel v1.7.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.7.0
