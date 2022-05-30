@@ -1,0 +1,169 @@
+{
+	"info": {
+		"_postman_id": "58bf1137-c25d-4fc3-840b-971f350bbe00",
+		"name": "GoUnico",
+		"description": "Collection to test GOUnico Aplication",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "4508129"
+	},
+	"item": [
+		{
+			"name": "Send CSV to processor",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/Vitão/go/src/gounico/csv/DEINFO_AB_FEIRASLIVRES_2014.csv"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8008/csvprocessor",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8008",
+					"path": [
+						"csvprocessor"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET By Distrito",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8008/buscarfeira/distrito/87",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8008",
+					"path": [
+						"buscarfeira",
+						"distrito",
+						"87"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE Feira by ID",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8008/excluirfeira/distrito/86/feira/145",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8008",
+					"path": [
+						"excluirfeira",
+						"distrito",
+						"86",
+						"feira",
+						"145"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST new Feira",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\":\"1\",\r\n    \"longitude\": \"-46550164\",\r\n    \"latitude\": \"-23558733\",\r\n    \"set_cens\": \"355030885000091\",\r\n    \"area_p\": \"3550308005040\",\r\n    \"cod_dist\": \"87\",\r\n    \"distrito\": \"VILA FORMOSA\",\r\n    \"cod_sub_pref\": \"26\",\r\n    \"sub_prefe\": \"A-FORMOSA-CARRAO\",\r\n    \"regiao_5\": \"Leste Novo\",\r\n    \"regiao_8\": \"Leste 3\",\r\n    \"nome_feira\": \"VILA FORMOSA 2\",\r\n    \"registro\": \"4041-0\",\r\n    \"logradouro\": \"RUA A\",\r\n    \"numero\": \"S/N\",\r\n    \"bairro\": \"CHUPINS\",\r\n    \"referencia\": \"TV RUA PRETORIA A\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8008/novafeira",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8008",
+					"path": [
+						"novafeira"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PUT Feira",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\":\"2\",\r\n    \"longitude\": \"-46550164\",\r\n    \"latitude\": \"-23558733\",\r\n    \"set_cens\": \"355030885000091\",\r\n    \"area_p\": \"3550308005040\",\r\n    \"cod_dist\": \"87\",\r\n    \"distrito\": \"VILA FORMOSA\",\r\n    \"cod_sub_pref\": \"26\",\r\n    \"sub_prefe\": \"A-FORMOSA-CARRAO\",\r\n    \"regiao_5\": \"Leste Novo\",\r\n    \"regiao_8\": \"Leste 3\",\r\n    \"nome_feira\": \"VILA FORMOSA 2\",\r\n    \"registro\": \"4041-0\",\r\n    \"logradouro\": \"RUA A\",\r\n    \"numero\": \"S/N\",\r\n    \"bairro\": \"CHUPINS\",\r\n    \"referencia\": \"TV RUA PRETORIA A\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8008/novafeira",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8008",
+					"path": [
+						"novafeira"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Publisher Feira",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\":\"6\",\r\n    \"longitude\": \"-46550164\",\r\n    \"latitude\": \"-23558733\",\r\n    \"set_cens\": \"355030885000091\",\r\n    \"area_p\": \"3550308005040\",\r\n    \"cod_dist\": \"85\",\r\n    \"distrito\": \"VILA FORMOSA\",\r\n    \"cod_sub_pref\": \"26\",\r\n    \"sub_prefe\": \"A-FORMOSA-CARRAO\",\r\n    \"regiao_5\": \"Leste Novo\",\r\n    \"regiao_8\": \"Leste 3\",\r\n    \"nome_feira\": \"VILA FORMOSA 2\",\r\n    \"registro\": \"4041-0\",\r\n    \"logradouro\": \"RUA A\",\r\n    \"numero\": \"S/N\",\r\n    \"bairro\": \"CHUPINS\",\r\n    \"referencia\": \"TV RUA PRETORIA A\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8008/publisher/novafeira",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8008",
+					"path": [
+						"publisher",
+						"novafeira"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
